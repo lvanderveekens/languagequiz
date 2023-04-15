@@ -7,6 +7,7 @@ import (
 
 	"github.com/jackc/pgx/v4"
 	"github.com/lvanderveekens/language-resources/api"
+	"github.com/lvanderveekens/language-resources/postgres"
 )
 
 func main() {
@@ -25,15 +26,11 @@ func main() {
 
 	fmt.Println("Successfully connected to database!")
 
-	var version string
-	err = conn.QueryRow(context.Background(), "SELECT version()").Scan(&version)
-	if err != nil {
-		fmt.Println("Error executing query:", err)
-		return
-	}
+	exerciseStorage := postgres.NewExerciseStorage(conn)
+	exerciseHandler := api.NewExerciseHandler(exerciseStorage)
 
-	fmt.Println("PostgreSQL version:", version)
+	var handlers = api.NewHandlers(exerciseHandler)
 
-	var server = api.NewServer()
+	var server = api.NewServer(handlers)
 	log.Fatal(server.Start(8080))
 }
