@@ -1,18 +1,37 @@
 package postgres
 
 import (
-	"github.com/jackc/pgx/v4"
+	"context"
+
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/lvanderveekens/language-resources/exercise"
 )
 
 type ExerciseStorage struct {
-	conn *pgx.Conn
+	dbpool *pgxpool.Pool
 }
 
-func NewExerciseStorage(conn *pgx.Conn) *ExerciseStorage {
-	return &ExerciseStorage{conn: conn}
+func NewExerciseStorage(conn *pgxpool.Pool) *ExerciseStorage {
+	return &ExerciseStorage{dbpool: conn}
 }
 
-func (s *ExerciseStorage) CreateExercise() (*exercise.Exercise, error) {
-	panic("TODO")
+func (es *ExerciseStorage) CreateExercise() (*exercise.Exercise, error) {
+	var e Exercise
+	err := es.dbpool.QueryRow(context.Background(), `
+		INSERT INTO "exercise" ("name") 
+		VALUES ('foo') 
+		RETURNING *
+	`).Scan(&e)
+	if err != nil {
+		return nil, err
+	}
+
+	return mapToDomainObject(e), nil
+}
+
+func mapToDomainObject(e Exercise) *exercise.Exercise {
+	return nil
+}
+
+type Exercise struct {
 }

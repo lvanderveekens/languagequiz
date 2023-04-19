@@ -5,28 +5,28 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/lvanderveekens/language-resources/api"
 	"github.com/lvanderveekens/language-resources/postgres"
 )
 
 func main() {
-	config, err := pgx.ParseConfig("postgres://postgres:postgres@localhost:5432/app?sslmode=disable")
+	config, err := pgxpool.ParseConfig("postgres://postgres:postgres@localhost:5432/app?sslmode=disable")
 	if err != nil {
 		fmt.Println("Error parsing connection config:", err)
 		return
 	}
 
-	conn, err := pgx.ConnectConfig(context.Background(), config)
+	dbpool, err := pgxpool.NewWithConfig(context.Background(), config)
 	if err != nil {
-		fmt.Println("Error connecting to database:", err)
+		fmt.Println("Unable to create connection pool:", err)
 		return
 	}
-	defer conn.Close(context.Background())
+	defer dbpool.Close()
 
 	fmt.Println("Successfully connected to database!")
 
-	exerciseStorage := postgres.NewExerciseStorage(conn)
+	exerciseStorage := postgres.NewExerciseStorage(dbpool)
 	exerciseHandler := api.NewExerciseHandler(exerciseStorage)
 
 	var handlers = api.NewHandlers(exerciseHandler)
