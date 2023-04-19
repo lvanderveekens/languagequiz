@@ -1,3 +1,7 @@
 package exercise
 
-type Exercise struct{}
+import "github.com/google/uuid"
+
+type Exercise struct {
+	ID uuid.UUID
+}

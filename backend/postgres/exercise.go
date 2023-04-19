@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/lvanderveekens/language-resources/exercise"
 )
@@ -16,12 +17,17 @@ func NewExerciseStorage(conn *pgxpool.Pool) *ExerciseStorage {
 }
 
 func (es *ExerciseStorage) CreateExercise() (*exercise.Exercise, error) {
+	id, err := uuid.NewRandom()
+	if err != nil {
+		return nil, err
+	}
+
 	var e Exercise
-	err := es.dbpool.QueryRow(context.Background(), `
-		INSERT INTO "exercise" ("name") 
-		VALUES ('foo') 
+	err = es.dbpool.QueryRow(context.Background(), `
+		INSERT INTO "exercise" ("id") 
+		VALUES ($1) 
 		RETURNING *
-	`).Scan(&e)
+	`, id).Scan(&e)
 	if err != nil {
 		return nil, err
 	}

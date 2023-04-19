@@ -8,10 +8,15 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/lvanderveekens/language-resources/api"
 	"github.com/lvanderveekens/language-resources/postgres"
+
+	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
 func main() {
-	config, err := pgxpool.ParseConfig("postgres://postgres:postgres@localhost:5432/app?sslmode=disable")
+	connString := "postgres://postgres:postgres@localhost:5432/app?sslmode=disable"
+	config, err := pgxpool.ParseConfig(connString)
 	if err != nil {
 		fmt.Println("Error parsing connection config:", err)
 		return
@@ -25,6 +30,14 @@ func main() {
 	defer dbpool.Close()
 
 	fmt.Println("Successfully connected to database!")
+
+	m, err := migrate.New("file://migrations", connString)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if err := m.Up(); err != nil {
+		log.Fatal(err)
+	}
 
 	exerciseStorage := postgres.NewExerciseStorage(dbpool)
 	exerciseHandler := api.NewExerciseHandler(exerciseStorage)
