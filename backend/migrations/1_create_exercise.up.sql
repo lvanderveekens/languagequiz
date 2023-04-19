@@ -1,5 +1,9 @@
 BEGIN;
 
-CREATE TABLE IF NOT EXISTS exercise(id UUID, PRIMARY KEY (id));
+CREATE TABLE IF NOT EXISTS exercise(
+    id UUID NOT NULL,
+    created_at TIMESTAMP NOT NULL,
+    PRIMARY KEY (id)
+);
 
 COMMIT;

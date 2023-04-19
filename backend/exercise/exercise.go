@@ -1,7 +1,12 @@
 package exercise
 
-import "github.com/google/uuid"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type Exercise struct {
-	ID uuid.UUID
+	ID        uuid.UUID
+	CreatedAt time.Time
 }

@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -24,10 +25,10 @@ func (es *ExerciseStorage) CreateExercise() (*exercise.Exercise, error) {
 
 	var e Exercise
 	err = es.dbpool.QueryRow(context.Background(), `
-		INSERT INTO "exercise" ("id") 
-		VALUES ($1) 
+		INSERT INTO "exercise" ("id", "created_at") 
+		VALUES ($1, $2) 
 		RETURNING *
-	`, id).Scan(&e)
+	`, id, time.Now()).Scan(&e)
 	if err != nil {
 		return nil, err
 	}
@@ -40,4 +41,6 @@ func mapToDomainObject(e Exercise) *exercise.Exercise {
 }
 
 type Exercise struct {
+	ID        uuid.UUID
+	CreatedAt time.Time
 }
