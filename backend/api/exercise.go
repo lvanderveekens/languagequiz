@@ -1,7 +1,7 @@
 package api
 
 import (
-	"log"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -18,13 +18,23 @@ func NewExerciseHandler(exerciseStorage exercise.Storage) *ExerciseHandler {
 	}
 }
 
-func (h *ExerciseHandler) CreateExercise(c *gin.Context) {
-	_, err := h.exerciseStorage.CreateExercise()
+func (h *ExerciseHandler) CreateExercise(c *gin.Context) error {
+	e, err := h.exerciseStorage.CreateExercise()
 	if err != nil {
-		log.Fatalf("error: failed to create exercise: %s", err)
+		return fmt.Errorf("failed to create exercise: %w", err)
 	}
 
-	// TODO: map to JSON and return
+	// FIXME: doesn't log timezone
+	dto := NewExercise(e.ID.String(), e.CreatedAt.Format("2006-01-02T15:04:05Z07:00"))
+	c.JSON(http.StatusCreated, dto)
+	return nil
+}
 
-	c.JSON(http.StatusCreated, gin.H{})
+type Exercise struct {
+	ID        string `json:"id"`
+	CreatedAt string `json:"createdAt"`
+}
+
+func NewExercise(id, createdAt string) Exercise {
+	return Exercise{ID: id, CreatedAt: createdAt}
 }

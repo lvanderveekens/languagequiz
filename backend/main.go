@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
+	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/lvanderveekens/language-resources/api"
@@ -15,6 +17,11 @@ import (
 )
 
 func main() {
+	// TODO: do I need both?
+	os.Setenv("TZ", "Europe/Amsterdam")
+	loc, _ := time.LoadLocation("Europe/Amsterdam")
+	time.Local = loc
+
 	connString := "postgres://postgres:postgres@localhost:5432/app?sslmode=disable"
 	config, err := pgxpool.ParseConfig(connString)
 	if err != nil {

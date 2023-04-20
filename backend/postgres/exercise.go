@@ -28,7 +28,7 @@ func (es *ExerciseStorage) CreateExercise() (*exercise.Exercise, error) {
 		INSERT INTO "exercise" ("id", "created_at") 
 		VALUES ($1, $2) 
 		RETURNING *
-	`, id, time.Now()).Scan(&e)
+	`, id, time.Now()).Scan(&e.ID, &e.CreatedAt)
 	if err != nil {
 		return nil, err
 	}
@@ -37,7 +37,8 @@ func (es *ExerciseStorage) CreateExercise() (*exercise.Exercise, error) {
 }
 
 func mapToDomainObject(e Exercise) *exercise.Exercise {
-	return nil
+	domainObject := exercise.New(e.ID, e.CreatedAt)
+	return &domainObject
 }
 
 type Exercise struct {
