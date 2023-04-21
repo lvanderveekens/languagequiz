@@ -3,6 +3,7 @@ package api
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/lvanderveekens/language-resources/exercise"
@@ -24,8 +25,7 @@ func (h *ExerciseHandler) CreateExercise(c *gin.Context) error {
 		return fmt.Errorf("failed to create exercise: %w", err)
 	}
 
-	// FIXME: doesn't log timezone
-	dto := NewExercise(e.ID.String(), e.CreatedAt.Format("2006-01-02T15:04:05Z07:00"))
+	dto := NewExercise(e.ID, e.CreatedAt.Format(time.RFC3339), e.UpdatedAt.Format(time.RFC3339))
 	c.JSON(http.StatusCreated, dto)
 	return nil
 }
@@ -33,8 +33,9 @@ func (h *ExerciseHandler) CreateExercise(c *gin.Context) error {
 type Exercise struct {
 	ID        string `json:"id"`
 	CreatedAt string `json:"createdAt"`
+	UpdatedAt string `json:"updatedAt"`
 }
 
-func NewExercise(id, createdAt string) Exercise {
-	return Exercise{ID: id, CreatedAt: createdAt}
+func NewExercise(id, createdAt, updatedAt string) Exercise {
+	return Exercise{ID: id, CreatedAt: createdAt, UpdatedAt: updatedAt}
 }

@@ -2,15 +2,14 @@ package exercise
 
 import (
 	"time"
-
-	"github.com/google/uuid"
 )
 
 type Exercise struct {
-	ID        uuid.UUID
+	ID        string
 	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
-func New(id uuid.UUID, createdAt time.Time) Exercise {
-	return Exercise{ID: id, CreatedAt: createdAt}
+func New(id string, createdAt, updatedAt time.Time) Exercise {
+	return Exercise{ID: id, CreatedAt: createdAt, UpdatedAt: updatedAt}
 }

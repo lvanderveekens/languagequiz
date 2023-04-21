@@ -25,10 +25,10 @@ func (es *ExerciseStorage) CreateExercise() (*exercise.Exercise, error) {
 
 	var e Exercise
 	err = es.dbpool.QueryRow(context.Background(), `
-		INSERT INTO "exercise" ("id", "created_at") 
-		VALUES ($1, $2) 
+		INSERT INTO "exercise" ("id") 
+		VALUES ($1) 
 		RETURNING *
-	`, id, time.Now()).Scan(&e.ID, &e.CreatedAt)
+	`, id).Scan(&e.ID, &e.CreatedAt, &e.UpdatedAt)
 	if err != nil {
 		return nil, err
 	}
@@ -37,11 +37,12 @@ func (es *ExerciseStorage) CreateExercise() (*exercise.Exercise, error) {
 }
 
 func mapToDomainObject(e Exercise) *exercise.Exercise {
-	domainObject := exercise.New(e.ID, e.CreatedAt)
+	domainObject := exercise.New(e.ID, e.CreatedAt, e.UpdatedAt)
 	return &domainObject
 }
 
 type Exercise struct {
-	ID        uuid.UUID
+	ID        string
 	CreatedAt time.Time
+	UpdatedAt time.Time
 }

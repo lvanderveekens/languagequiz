@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -17,10 +16,8 @@ import (
 )
 
 func main() {
-	// TODO: do I need both?
-	os.Setenv("TZ", "Europe/Amsterdam")
-	loc, _ := time.LoadLocation("Europe/Amsterdam")
-	time.Local = loc
+	zoneName, _ := time.Now().Zone()
+	fmt.Printf("Configured time zone: %s", zoneName)
 
 	connString := "postgres://postgres:postgres@localhost:5432/app?sslmode=disable"
 	config, err := pgxpool.ParseConfig(connString)
