@@ -21,6 +21,7 @@ func NewServer(handlers *Handlers) *Server {
 func (s *Server) Start(port int) error {
 	r := gin.Default()
 
+	r.GET("/v1/exercises", createHandlerFunc(s.handlers.exercise.GetExercises))
 	r.POST("/v1/exercises", createHandlerFunc(s.handlers.exercise.CreateExercise))
 
 	return r.Run(":" + strconv.Itoa(port))

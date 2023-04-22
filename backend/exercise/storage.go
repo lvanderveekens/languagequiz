@@ -1,5 +1,6 @@
 package exercise
 
 type Storage interface {
-	CreateExercise() (*Exercise, error)
+	Create() (*Exercise, error)
+	Find() ([]Exercise, error)
 }

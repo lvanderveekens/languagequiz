@@ -20,14 +20,33 @@ func NewExerciseHandler(exerciseStorage exercise.Storage) *ExerciseHandler {
 }
 
 func (h *ExerciseHandler) CreateExercise(c *gin.Context) error {
-	e, err := h.exerciseStorage.CreateExercise()
+	exercise, err := h.exerciseStorage.Create()
 	if err != nil {
 		return fmt.Errorf("failed to create exercise: %w", err)
 	}
 
-	dto := NewExercise(e.ID, e.CreatedAt.Format(time.RFC3339), e.UpdatedAt.Format(time.RFC3339))
+	dto := h.toDto(*exercise)
 	c.JSON(http.StatusCreated, dto)
 	return nil
+}
+
+func (h *ExerciseHandler) GetExercises(c *gin.Context) error {
+	exercises, err := h.exerciseStorage.Find()
+	if err != nil {
+		return fmt.Errorf("failed to find exercises: %w", err)
+	}
+
+	dtos := make([]Exercise, 0)
+	for _, exercise := range exercises {
+		dtos = append(dtos, h.toDto(exercise))
+	}
+
+	c.JSON(http.StatusOK, dtos)
+	return nil
+}
+
+func (h *ExerciseHandler) toDto(e exercise.Exercise) Exercise {
+	return NewExercise(e.ID, e.CreatedAt.Format(time.RFC3339), e.UpdatedAt.Format(time.RFC3339))
 }
 
 type Exercise struct {
