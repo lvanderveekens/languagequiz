@@ -8,7 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/lvanderveekens/language-resources/exercise"
+	"github.com/lvanderveekens/testmaker/exercise"
 )
 
 type ExerciseStorage struct {

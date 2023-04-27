@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/lvanderveekens/language-resources/exercise"
+	"github.com/lvanderveekens/testmaker/exercise"
 )
 
 type ExerciseHandler struct {

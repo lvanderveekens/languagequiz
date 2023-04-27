@@ -1,4 +1,4 @@
-module github.com/lvanderveekens/language-resources
+module github.com/lvanderveekens/testmaker
 
 go 1.20
 

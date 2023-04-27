@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/lvanderveekens/language-resources/api"
-	"github.com/lvanderveekens/language-resources/postgres"
+	"github.com/lvanderveekens/testmaker/api"
+	"github.com/lvanderveekens/testmaker/postgres"
 
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
