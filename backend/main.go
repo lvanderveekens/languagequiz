@@ -19,7 +19,7 @@ func main() {
 	zoneName, _ := time.Now().Zone()
 	fmt.Printf("Configured time zone: %s", zoneName)
 
-	connString := "postgres://postgres:postgres@localhost:5432/app?sslmode=disable"
+	connString := "postgres://postgres:postgres@localhost:15432/app?sslmode=disable"
 	config, err := pgxpool.ParseConfig(connString)
 	if err != nil {
 		fmt.Println("Error parsing connection config:", err)
@@ -49,5 +49,5 @@ func main() {
 	var handlers = api.NewHandlers(exerciseHandler)
 
 	var server = api.NewServer(handlers)
-	log.Fatal(server.Start(8080))
+	log.Fatal(server.Start(8888))
 }

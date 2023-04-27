@@ -6,7 +6,7 @@ export default async function handler(
 ) {
   try {
     const userId = req.query.userId;
-    const response = await fetch(`http://localhost:8080/v1/exercises`);
+    const response = await fetch(`http://localhost:8888/v1/exercises`);
     const data = await response.json();
     res.status(200).json(data);
   } catch (err) {

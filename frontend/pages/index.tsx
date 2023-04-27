@@ -11,23 +11,26 @@ type Exercise = {
 }
 
 export default function Home() {
-  const [data, setData] = useState<Exercise[]>([])
+  const [data, setData] = useState<Exercise[]>([]);
 
   useEffect(() => {
-    fetch('/api/exercises')
+    fetch("/api/exercises")
       .then((res) => res.json())
       .then((data) => {
-        setData(data)
-      })
-  }, [])
+        setData(data);
+      });
+  }, []);
 
   return (
     <main>
-      {data.map((exercise) => (
-        <div>
-          ID: {exercise.id}, CreatedAt: {exercise.createdAt}, UpdatedAt: {exercise.updatedAt}
-        </div>
-      ))}
+      <div className="container mx-auto">
+        {data.map((exercise) => (
+          <div>
+            ID: {exercise.id}, CreatedAt: {exercise.createdAt}, UpdatedAt:{" "}
+            {exercise.updatedAt}
+          </div>
+        ))}
+      </div>
     </main>
   );
 }
