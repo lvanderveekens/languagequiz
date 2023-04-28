@@ -45,28 +45,18 @@ func (h *ExerciseHandler) CreateExercise(c *gin.Context) error {
 			return NewError(http.StatusBadRequest, fmt.Sprintf("failed to decode request body as struct: %s", err.Error()))
 		}
 
-		exercise := mapRequestToMultipleChoiceExercise(req)
-		created, err := h.exerciseStorage.CreateMultipleChoiceExercise(exercise)
+		exercise, err := h.exerciseStorage.CreateMultipleChoiceExercise(req.toCommand())
 		if err != nil {
 			return fmt.Errorf("failed to create exercise: %w", err)
 		}
 
-		dto = mapMultipleChoiceExerciseToDto(*created)
+		dto = mapMultipleChoiceExerciseToDto(*exercise)
 	default:
 		return NewError(http.StatusBadRequest, fmt.Sprintf("Unsupported exercise type: %v", jsonData["type"]))
 	}
 
 	c.JSON(http.StatusCreated, dto)
 	return nil
-}
-
-func mapRequestToMultipleChoiceExercise(req CreateMultipleChoiceExerciseRequest) exercise.MultipleChoiceExercise {
-	return exercise.NewMultipleChoiceExercise(
-		exercise.Exercise{},
-		req.Question,
-		req.Options,
-		req.CorrectOption,
-	)
 }
 
 func (h *ExerciseHandler) GetExercises(c *gin.Context) error {
@@ -156,4 +146,12 @@ type CreateMultipleChoiceExerciseRequest struct {
 	Question      string   `json:"question"`
 	Options       []string `json:"options"`
 	CorrectOption string   `json:"correctOption"`
+}
+
+func (r *CreateMultipleChoiceExerciseRequest) toCommand() exercise.CreateMultipleChoiceExerciseCommand {
+	return exercise.NewCreateMultipleChoiceExerciseCommand(
+		r.Question,
+		r.Options,
+		r.CorrectOption,
+	)
 }

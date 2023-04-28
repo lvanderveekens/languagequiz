@@ -19,7 +19,9 @@ func NewExerciseStorage(conn *pgxpool.Pool) *ExerciseStorage {
 	return &ExerciseStorage{dbpool: conn}
 }
 
-func (s *ExerciseStorage) CreateMultipleChoiceExercise(e exercise.MultipleChoiceExercise) (*exercise.MultipleChoiceExercise, error) {
+func (s *ExerciseStorage) CreateMultipleChoiceExercise(
+	e exercise.CreateMultipleChoiceExerciseCommand,
+) (*exercise.MultipleChoiceExercise, error) {
 	id, err := uuid.NewRandom()
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate new UUID: %w", err)

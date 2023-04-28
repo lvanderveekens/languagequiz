@@ -1,6 +1,6 @@
 package exercise
 
 type Storage interface {
-	CreateMultipleChoiceExercise(e MultipleChoiceExercise) (*MultipleChoiceExercise, error)
+	CreateMultipleChoiceExercise(e CreateMultipleChoiceExerciseCommand) (*MultipleChoiceExercise, error)
 	Find() ([]any, error)
 }
