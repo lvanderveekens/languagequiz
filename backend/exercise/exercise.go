@@ -11,7 +11,11 @@ type Exercise struct {
 }
 
 func New(id string, createdAt, updatedAt time.Time) Exercise {
-	return Exercise{ID: id, CreatedAt: createdAt, UpdatedAt: updatedAt}
+	return Exercise{
+		ID:        id,
+		CreatedAt: createdAt,
+		UpdatedAt: updatedAt,
+	}
 }
 
 type MultipleChoiceExercise struct {
@@ -29,24 +33,6 @@ func NewMultipleChoiceExercise(
 ) MultipleChoiceExercise {
 	return MultipleChoiceExercise{
 		Exercise:      exercise,
-		Question:      question,
-		Options:       options,
-		CorrectOption: correctOption,
-	}
-}
-
-type CreateMultipleChoiceExerciseCommand struct {
-	Question      string
-	Options       []string
-	CorrectOption string
-}
-
-func NewCreateMultipleChoiceExerciseCommand(
-	question string,
-	options []string,
-	correctOption string,
-) CreateMultipleChoiceExerciseCommand {
-	return CreateMultipleChoiceExerciseCommand{
 		Question:      question,
 		Options:       options,
 		CorrectOption: correctOption,

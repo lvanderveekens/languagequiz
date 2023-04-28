@@ -31,7 +31,7 @@ func (s *ExerciseStorage) CreateMultipleChoiceExercise(
 		INSERT INTO exercise (id, type, question, options, correct_option) 
 		VALUES ($1, $2, $3, $4, $5) 
 		RETURNING *
-	`, id, "multipleChoice", e.Question, e.Options, e.CorrectOption)
+	`, id, exercise.TypeMultipleChoice, e.Question, e.Options, e.CorrectOption)
 
 	entity, err := mapToEntity(row)
 	if err != nil {
@@ -93,16 +93,22 @@ func mapToMultipleChoiceExercise(entity Exercise) *exercise.MultipleChoiceExerci
 func mapToExercises(entities []Exercise) ([]any, error) {
 	exercises := make([]any, 0)
 	for _, entity := range entities {
-		var exercise any
-		switch entity.Type {
-		case "multipleChoice":
-			exercise = *mapToMultipleChoiceExercise(entity)
-		default:
-			return nil, fmt.Errorf("unknown exercise type: %s", entity.Type)
+		exercise, err := mapToExercise(entity)
+		if err != nil {
+			return nil, err
 		}
 		exercises = append(exercises, exercise)
 	}
 	return exercises, nil
+}
+
+func mapToExercise(entity Exercise) (any, error) {
+	switch entity.Type {
+	case exercise.TypeMultipleChoice:
+		return *mapToMultipleChoiceExercise(entity), nil
+	default:
+		return nil, fmt.Errorf("unknown exercise type: %s", entity.Type)
+	}
 }
 
 type Exercise struct {

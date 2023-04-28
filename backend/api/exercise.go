@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"time"
 
@@ -23,22 +23,20 @@ func NewExerciseHandler(exerciseStorage exercise.Storage) *ExerciseHandler {
 }
 
 func (h *ExerciseHandler) CreateExercise(c *gin.Context) error {
-	bodyBytes, err := ioutil.ReadAll(c.Request.Body)
+	bodyBytes, err := io.ReadAll(c.Request.Body)
 	if err != nil {
 		return fmt.Errorf("failed to read request body: %w", err)
 	}
 
-	var jsonData map[string]any
-	err = json.NewDecoder(bytes.NewReader(bodyBytes)).Decode(&jsonData)
+	var req CreateExerciseRequest
+	err = json.NewDecoder(bytes.NewReader(bodyBytes)).Decode(&req)
 	if err != nil {
 		return fmt.Errorf("failed to decode request body as map: %w", err)
 	}
 
 	var dto any
-	switch jsonData["type"] {
-	case nil:
-		return NewError(http.StatusBadRequest, "Required parameter is missing: type")
-	case "multipleChoice":
+	switch req.Type {
+	case exercise.TypeMultipleChoice:
 		var req CreateMultipleChoiceExerciseRequest
 		err := json.NewDecoder(bytes.NewReader(bodyBytes)).Decode(&req)
 		if err != nil {
@@ -52,7 +50,7 @@ func (h *ExerciseHandler) CreateExercise(c *gin.Context) error {
 
 		dto = mapMultipleChoiceExerciseToDto(*exercise)
 	default:
-		return NewError(http.StatusBadRequest, fmt.Sprintf("Unsupported exercise type: %v", jsonData["type"]))
+		return NewError(http.StatusBadRequest, fmt.Sprintf("Unsupported exercise type: %v", req.Type))
 	}
 
 	c.JSON(http.StatusCreated, dto)
@@ -84,7 +82,7 @@ func mapMultipleChoiceExerciseToDto(e exercise.MultipleChoiceExercise) MultipleC
 			e.ID,
 			e.CreatedAt.Format(time.RFC3339),
 			e.UpdatedAt.Format(time.RFC3339),
-			"multipleChoice",
+			exercise.TypeMultipleChoice,
 		),
 		e.Question,
 		e.Options,
@@ -103,7 +101,7 @@ func mapExerciseToDto(e any) (any, error) {
 
 type Exercise struct {
 	ID        string `json:"id"`
-	Type      string `json:"type"` // TODO: string enum?
+	Type      string `json:"type"`
 	CreatedAt string `json:"createdAt"`
 	UpdatedAt string `json:"updatedAt"`
 }
@@ -139,6 +137,7 @@ func newMultipleChoiceExercise(
 }
 
 type CreateExerciseRequest struct {
+	Type string `json:"type"`
 }
 
 type CreateMultipleChoiceExerciseRequest struct {
