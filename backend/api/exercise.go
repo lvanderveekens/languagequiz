@@ -3,10 +3,10 @@ package api
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/lvanderveekens/testmaker/exercise"
@@ -38,9 +38,11 @@ func (h *ExerciseHandler) CreateExercise(c *gin.Context) error {
 	switch req.Type {
 	case exercise.TypeMultipleChoice:
 		var req CreateMultipleChoiceExerciseRequest
-		err := json.NewDecoder(bytes.NewReader(bodyBytes)).Decode(&req)
-		if err != nil {
+		if err := json.NewDecoder(bytes.NewReader(bodyBytes)).Decode(&req); err != nil {
 			return NewError(http.StatusBadRequest, fmt.Sprintf("failed to decode request body as struct: %s", err.Error()))
+		}
+		if err := req.Validate(); err != nil {
+			return NewError(http.StatusBadRequest, err.Error())
 		}
 
 		exercise, err := h.exerciseStorage.CreateMultipleChoiceExercise(req.toCommand())
@@ -51,9 +53,11 @@ func (h *ExerciseHandler) CreateExercise(c *gin.Context) error {
 		dto = mapMultipleChoiceExerciseToDto(*exercise)
 	case exercise.TypeCompleteTheSentence:
 		var req CreateCompleteTheSentenceExerciseRequest
-		err := json.NewDecoder(bytes.NewReader(bodyBytes)).Decode(&req)
-		if err != nil {
+		if err := json.NewDecoder(bytes.NewReader(bodyBytes)).Decode(&req); err != nil {
 			return NewError(http.StatusBadRequest, fmt.Sprintf("failed to decode request body as struct: %s", err.Error()))
+		}
+		if err := req.Validate(); err != nil {
+			return NewError(http.StatusBadRequest, err.Error())
 		}
 
 		exercise, err := h.exerciseStorage.CreateCompleteTheSentenceExercise(req.toCommand())
@@ -91,12 +95,7 @@ func (h *ExerciseHandler) GetExercises(c *gin.Context) error {
 
 func mapMultipleChoiceExerciseToDto(e exercise.MultipleChoiceExercise) MultipleChoiceExercise {
 	return newMultipleChoiceExercise(
-		NewExercise(
-			e.ID,
-			e.CreatedAt.Format(time.RFC3339),
-			e.UpdatedAt.Format(time.RFC3339),
-			exercise.TypeMultipleChoice,
-		),
+		NewExercise(e.ID, exercise.TypeMultipleChoice),
 		e.Question,
 		e.Options,
 		e.CorrectOption,
@@ -105,12 +104,7 @@ func mapMultipleChoiceExerciseToDto(e exercise.MultipleChoiceExercise) MultipleC
 
 func mapCompleteTheSentenceExerciseToDto(e exercise.CompleteTheSentenceExercise) CompleteTheSentenceExercise {
 	return NewCompleteTheSentenceExercise(
-		NewExercise(
-			e.ID,
-			e.CreatedAt.Format(time.RFC3339),
-			e.UpdatedAt.Format(time.RFC3339),
-			exercise.TypeCompleteTheSentence,
-		),
+		NewExercise(e.ID, exercise.TypeCompleteTheSentence),
 		e.BeforeGap,
 		e.Gap,
 		e.AfterGap,
@@ -129,18 +123,14 @@ func mapExerciseToDto(e any) (any, error) {
 }
 
 type Exercise struct {
-	ID        string `json:"id"`
-	Type      string `json:"type"`
-	CreatedAt string `json:"createdAt"`
-	UpdatedAt string `json:"updatedAt"`
+	ID   string `json:"id"`
+	Type string `json:"type"`
 }
 
-func NewExercise(id, createdAt, updatedAt, exerciseType string) Exercise {
+func NewExercise(id, exerciseType string) Exercise {
 	return Exercise{
-		ID:        id,
-		CreatedAt: createdAt,
-		UpdatedAt: updatedAt,
-		Type:      exerciseType,
+		ID:   id,
+		Type: exerciseType,
 	}
 }
 
@@ -203,6 +193,19 @@ func (r *CreateMultipleChoiceExerciseRequest) toCommand() exercise.CreateMultipl
 	)
 }
 
+func (r *CreateMultipleChoiceExerciseRequest) Validate() error {
+	if r.Question == "" {
+		return errors.New("required field is missing: question")
+	}
+	if r.Options == nil {
+		return errors.New("required field is missing: options")
+	}
+	if r.CorrectOption == "" {
+		return errors.New("required field is missing: correctOption")
+	}
+	return nil
+}
+
 type CreateCompleteTheSentenceExerciseRequest struct {
 	CreateExerciseRequest
 	BeforeGap string `json:"beforeGap"`
@@ -216,4 +219,17 @@ func (r *CreateCompleteTheSentenceExerciseRequest) toCommand() exercise.CreateCo
 		r.Gap,
 		r.AfterGap,
 	)
+}
+
+func (r *CreateCompleteTheSentenceExerciseRequest) Validate() error {
+	if r.BeforeGap == "" {
+		return errors.New("required field is missing: beforeGap")
+	}
+	if r.Gap == "" {
+		return errors.New("required field is missing: gap")
+	}
+	if r.AfterGap == "" {
+		return errors.New("required field is missing: afterGap")
+	}
+	return nil
 }
