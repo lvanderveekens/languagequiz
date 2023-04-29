@@ -17,3 +17,19 @@ func NewCreateMultipleChoiceExerciseCommand(
 		CorrectOption: correctOption,
 	}
 }
+
+type CreateCompleteTheSentenceExerciseCommand struct {
+	BeforeGap string
+	Gap       string
+	AfterGap  string
+}
+
+func NewCreateCompleteTheSentenceExerciseCommand(
+	beforeGap, gap, afterGap string,
+) CreateCompleteTheSentenceExerciseCommand {
+	return CreateCompleteTheSentenceExerciseCommand{
+		BeforeGap: beforeGap,
+		Gap:       gap,
+		AfterGap:  afterGap,
+	}
+}

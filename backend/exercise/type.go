@@ -1,5 +1,6 @@
 package exercise
 
 const (
-	TypeMultipleChoice = "multipleChoice"
+	TypeMultipleChoice      = "multipleChoice"
+	TypeCompleteTheSentence = "completeTheSentence"
 )

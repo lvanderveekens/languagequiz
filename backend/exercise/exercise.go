@@ -38,3 +38,19 @@ func NewMultipleChoiceExercise(
 		CorrectOption: correctOption,
 	}
 }
+
+type CompleteTheSentenceExercise struct {
+	Exercise
+	BeforeGap string
+	Gap       string
+	AfterGap  string
+}
+
+func NewCompleteTheSentenceExercise(exercise Exercise, beforeGap, gap, afterGap string) CompleteTheSentenceExercise {
+	return CompleteTheSentenceExercise{
+		Exercise:  exercise,
+		BeforeGap: beforeGap,
+		Gap:       gap,
+		AfterGap:  afterGap,
+	}
+}

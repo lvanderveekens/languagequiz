@@ -1,0 +1,7 @@
+BEGIN;
+
+ALTER TABLE exercise ADD COLUMN before_gap TEXT;
+ALTER TABLE exercise ADD COLUMN gap TEXT;
+ALTER TABLE exercise ADD COLUMN after_gap TEXT;
+
+COMMIT;

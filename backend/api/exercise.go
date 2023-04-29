@@ -49,6 +49,19 @@ func (h *ExerciseHandler) CreateExercise(c *gin.Context) error {
 		}
 
 		dto = mapMultipleChoiceExerciseToDto(*exercise)
+	case exercise.TypeCompleteTheSentence:
+		var req CreateCompleteTheSentenceExerciseRequest
+		err := json.NewDecoder(bytes.NewReader(bodyBytes)).Decode(&req)
+		if err != nil {
+			return NewError(http.StatusBadRequest, fmt.Sprintf("failed to decode request body as struct: %s", err.Error()))
+		}
+
+		exercise, err := h.exerciseStorage.CreateCompleteTheSentenceExercise(req.toCommand())
+		if err != nil {
+			return fmt.Errorf("failed to create exercise: %w", err)
+		}
+
+		dto = mapCompleteTheSentenceExerciseToDto(*exercise)
 	default:
 		return NewError(http.StatusBadRequest, fmt.Sprintf("Unsupported exercise type: %v", req.Type))
 	}
@@ -90,10 +103,26 @@ func mapMultipleChoiceExerciseToDto(e exercise.MultipleChoiceExercise) MultipleC
 	)
 }
 
+func mapCompleteTheSentenceExerciseToDto(e exercise.CompleteTheSentenceExercise) CompleteTheSentenceExercise {
+	return NewCompleteTheSentenceExercise(
+		NewExercise(
+			e.ID,
+			e.CreatedAt.Format(time.RFC3339),
+			e.UpdatedAt.Format(time.RFC3339),
+			exercise.TypeCompleteTheSentence,
+		),
+		e.BeforeGap,
+		e.Gap,
+		e.AfterGap,
+	)
+}
+
 func mapExerciseToDto(e any) (any, error) {
 	switch e := e.(type) {
 	case exercise.MultipleChoiceExercise:
 		return mapMultipleChoiceExerciseToDto(e), nil
+	case exercise.CompleteTheSentenceExercise:
+		return mapCompleteTheSentenceExerciseToDto(e), nil
 	default:
 		return nil, fmt.Errorf("unknown exercise type: %T", e)
 	}
@@ -136,6 +165,25 @@ func newMultipleChoiceExercise(
 	}
 }
 
+type CompleteTheSentenceExercise struct {
+	Exercise
+	BeforeGap string `json:"beforeGap"`
+	Gap       string `json:"gap"`
+	AfterGap  string `json:"afterGap"`
+}
+
+func NewCompleteTheSentenceExercise(
+	exercise Exercise,
+	beforeGap, gap, afterGap string,
+) CompleteTheSentenceExercise {
+	return CompleteTheSentenceExercise{
+		Exercise:  exercise,
+		BeforeGap: beforeGap,
+		Gap:       gap,
+		AfterGap:  afterGap,
+	}
+}
+
 type CreateExerciseRequest struct {
 	Type string `json:"type"`
 }
@@ -152,5 +200,20 @@ func (r *CreateMultipleChoiceExerciseRequest) toCommand() exercise.CreateMultipl
 		r.Question,
 		r.Options,
 		r.CorrectOption,
+	)
+}
+
+type CreateCompleteTheSentenceExerciseRequest struct {
+	CreateExerciseRequest
+	BeforeGap string `json:"beforeGap"`
+	Gap       string `json:"gap"`
+	AfterGap  string `json:"afterGap"`
+}
+
+func (r *CreateCompleteTheSentenceExerciseRequest) toCommand() exercise.CreateCompleteTheSentenceExerciseCommand {
+	return exercise.NewCreateCompleteTheSentenceExerciseCommand(
+		r.BeforeGap,
+		r.Gap,
+		r.AfterGap,
 	)
 }
