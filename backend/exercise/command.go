@@ -6,6 +6,8 @@ import (
 	"strconv"
 )
 
+var placeholderRegex = regexp.MustCompile(`{(\d+)}`)
+
 type CreateMultipleChoiceExerciseCommand struct {
 	Question      string
 	Options       []string
@@ -25,32 +27,38 @@ func NewCreateMultipleChoiceExerciseCommand(
 }
 
 type CreateCompleteTheSentenceExerciseCommand struct {
-	BeforeGap string
-	Gap       string
-	AfterGap  string
+	Sentence string // e.g. "This is a {0} truck."
+	Blank    string // e.g. "fire"
 }
 
-func NewCreateCompleteTheSentenceExerciseCommand(
-	beforeGap, gap, afterGap string,
-) CreateCompleteTheSentenceExerciseCommand {
-	return CreateCompleteTheSentenceExerciseCommand{
-		BeforeGap: beforeGap,
-		Gap:       gap,
-		AfterGap:  afterGap,
+func NewCreateCompleteTheSentenceExerciseCommand(sentence, blank string) (*CreateCompleteTheSentenceExerciseCommand, error) {
+	placeholders := placeholderRegex.FindAllStringSubmatch(sentence, -1)
+	if len(placeholders) == 0 {
+		return nil, errors.New("no placeholder found in sentence")
 	}
+	if len(placeholders) > 1 {
+		return nil, errors.New("more than one placeholder found in sentence")
+	}
+	if placeholders[0][1] != "0" {
+		return nil, errors.New("placeholder {0} not found")
+	}
+
+	return &CreateCompleteTheSentenceExerciseCommand{
+		Sentence: sentence,
+		Blank:    blank,
+	}, nil
 }
 
 type CreateCompleteTheTextExerciseCommand struct {
-	Text   string   // "This is a family {0}. Hi, how are {1} doing?"
-	Blanks []string // ["member", "you"]
+	Text   string   // e.g. "This is a family {0}. Hi, how are {1} doing?"
+	Blanks []string // e.g. ["member", "you"]
 }
 
 func NewCreateCompleteTheTextExerciseCommand(
 	text string,
 	blanks []string,
 ) (*CreateCompleteTheTextExerciseCommand, error) {
-	re := regexp.MustCompile(`{(\d+)}`)
-	placeholders := re.FindAllStringSubmatch(text, -1)
+	placeholders := placeholderRegex.FindAllStringSubmatch(text, -1)
 	if len(placeholders) != len(blanks) {
 		return nil, errors.New("number of placeholders does not match number of blanks")
 	}

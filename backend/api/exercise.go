@@ -60,7 +60,12 @@ func (h *ExerciseHandler) CreateExercise(c *gin.Context) error {
 			return NewError(http.StatusBadRequest, err.Error())
 		}
 
-		exercise, err := h.exerciseStorage.CreateCompleteTheSentenceExercise(req.toCommand())
+		cmd, err := req.toCommand()
+		if err != nil {
+			return NewError(http.StatusBadRequest, err.Error())
+		}
+
+		exercise, err := h.exerciseStorage.CreateCompleteTheSentenceExercise(*cmd)
 		if err != nil {
 			return fmt.Errorf("failed to create exercise: %w", err)
 		}
@@ -156,9 +161,8 @@ func newMultipleChoiceExerciseDto(e exercise.MultipleChoiceExercise) MultipleCho
 
 type CompleteTheSentenceExerciseDto struct {
 	ExerciseDto
-	BeforeGap string `json:"beforeGap"`
-	Gap       string `json:"gap"`
-	AfterGap  string `json:"afterGap"`
+	Sentence string `json:"sentence"`
+	Blank    string `json:"blank"`
 }
 
 func newCompleteTheSentenceExerciseDto(
@@ -166,9 +170,8 @@ func newCompleteTheSentenceExerciseDto(
 ) CompleteTheSentenceExerciseDto {
 	return CompleteTheSentenceExerciseDto{
 		ExerciseDto: newExerciseDto(e.Exercise, exercise.TypeCompleteTheSentence),
-		BeforeGap:   e.BeforeGap,
-		Gap:         e.Gap,
-		AfterGap:    e.AfterGap,
+		Sentence:    e.Sentence,
+		Blank:       e.Blank,
 	}
 }
 
@@ -220,28 +223,23 @@ func (r *CreateMultipleChoiceExerciseRequest) Validate() error {
 
 type CreateCompleteTheSentenceExerciseRequest struct {
 	CreateExerciseRequest
-	BeforeGap string `json:"beforeGap"`
-	Gap       string `json:"gap"`
-	AfterGap  string `json:"afterGap"`
+	Sentence string `json:"sentence"`
+	Blank    string `json:"blank"`
 }
 
-func (r *CreateCompleteTheSentenceExerciseRequest) toCommand() exercise.CreateCompleteTheSentenceExerciseCommand {
+func (r *CreateCompleteTheSentenceExerciseRequest) toCommand() (*exercise.CreateCompleteTheSentenceExerciseCommand, error) {
 	return exercise.NewCreateCompleteTheSentenceExerciseCommand(
-		r.BeforeGap,
-		r.Gap,
-		r.AfterGap,
+		r.Sentence,
+		r.Blank,
 	)
 }
 
 func (r *CreateCompleteTheSentenceExerciseRequest) Validate() error {
-	if r.BeforeGap == "" {
-		return errors.New("required field is missing: beforeGap")
+	if r.Sentence == "" {
+		return errors.New("required field is missing: sentence")
 	}
-	if r.Gap == "" {
-		return errors.New("required field is missing: gap")
-	}
-	if r.AfterGap == "" {
-		return errors.New("required field is missing: afterGap")
+	if r.Blank == "" {
+		return errors.New("required field is missing: blank")
 	}
 	return nil
 }

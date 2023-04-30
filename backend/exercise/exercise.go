@@ -41,24 +41,22 @@ func NewMultipleChoiceExercise(
 
 type CompleteTheSentenceExercise struct {
 	Exercise
-	BeforeGap string
-	Gap       string
-	AfterGap  string
+	Sentence string // e.g. "This is a {0} truck."
+	Blank    string // e.g. "fire"
 }
 
-func NewCompleteTheSentenceExercise(exercise Exercise, beforeGap, gap, afterGap string) CompleteTheSentenceExercise {
+func NewCompleteTheSentenceExercise(exercise Exercise, sentence, blank string) CompleteTheSentenceExercise {
 	return CompleteTheSentenceExercise{
-		Exercise:  exercise,
-		BeforeGap: beforeGap,
-		Gap:       gap,
-		AfterGap:  afterGap,
+		Exercise: exercise,
+		Sentence: sentence,
+		Blank:    blank,
 	}
 }
 
 type CompleteTheTextExercise struct {
 	Exercise
-	Text   string   // "This is a family {0}. Hi, how are {1} doing?"
-	Blanks []string // ["member", "you"]
+	Text   string   // e.g. "This is a family {0}. Hi, how are {1} doing?"
+	Blanks []string // e.g. ["member", "you"]
 }
 
 func NewCompleteTheTextExercise(exercise Exercise, text string, blanks []string) CompleteTheTextExercise {
