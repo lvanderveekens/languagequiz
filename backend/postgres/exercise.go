@@ -63,6 +63,28 @@ func (s *ExerciseStorage) CreateCompleteTheSentenceExercise(
 	return mapToCompleteTheSentenceExercise(*entity), nil
 }
 
+func (s *ExerciseStorage) CreateCompleteTheTextExercise(
+	e exercise.CreateCompleteTheTextExerciseCommand,
+) (*exercise.CompleteTheTextExercise, error) {
+	id, err := uuid.NewRandom()
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate new UUID: %w", err)
+	}
+
+	row := s.dbpool.QueryRow(context.Background(), `
+		INSERT INTO exercise (id, type, text, blanks) 
+		VALUES ($1, $2, $3, $4) 
+		RETURNING *
+	`, id, exercise.TypeCompleteTheText, e.Text, e.Blanks)
+
+	entity, err := mapToEntity(row)
+	if err != nil {
+		return nil, fmt.Errorf("failed to map row to entity: %w", err)
+	}
+
+	return mapToCompleteTheTextExercise(*entity), nil
+}
+
 func mapToEntity(row pgx.Row) (*Exercise, error) {
 	var entity Exercise
 	err := row.Scan(
@@ -76,6 +98,8 @@ func mapToEntity(row pgx.Row) (*Exercise, error) {
 		&entity.BeforeGap,
 		&entity.Gap,
 		&entity.AfterGap,
+		&entity.Text,
+		&entity.Blanks,
 	)
 	return &entity, err
 }
@@ -125,6 +149,15 @@ func mapToCompleteTheSentenceExercise(entity Exercise) *exercise.CompleteTheSent
 	return &e
 }
 
+func mapToCompleteTheTextExercise(entity Exercise) *exercise.CompleteTheTextExercise {
+	e := exercise.NewCompleteTheTextExercise(
+		exercise.New(entity.ID.String(), entity.CreatedAt, entity.UpdatedAt),
+		*entity.Text,
+		*entity.Blanks,
+	)
+	return &e
+}
+
 func mapToExercises(entities []Exercise) ([]any, error) {
 	exercises := make([]any, 0)
 	for _, entity := range entities {
@@ -143,6 +176,8 @@ func mapToExercise(entity Exercise) (any, error) {
 		return *mapToMultipleChoiceExercise(entity), nil
 	case exercise.TypeCompleteTheSentence:
 		return *mapToCompleteTheSentenceExercise(entity), nil
+	case exercise.TypeCompleteTheText:
+		return *mapToCompleteTheTextExercise(entity), nil
 	default:
 		return nil, fmt.Errorf("unknown exercise type: %s", entity.Type)
 	}
@@ -163,4 +198,8 @@ type Exercise struct {
 	BeforeGap *string
 	Gap       *string
 	AfterGap  *string
+
+	// complete the text fields
+	Text   *string
+	Blanks *[]string
 }

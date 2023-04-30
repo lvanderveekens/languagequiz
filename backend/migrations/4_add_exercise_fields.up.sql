@@ -1,0 +1,6 @@
+BEGIN;
+
+ALTER TABLE exercise ADD COLUMN text TEXT;
+ALTER TABLE exercise ADD COLUMN blanks TEXT[];
+
+COMMIT;

@@ -54,3 +54,17 @@ func NewCompleteTheSentenceExercise(exercise Exercise, beforeGap, gap, afterGap 
 		AfterGap:  afterGap,
 	}
 }
+
+type CompleteTheTextExercise struct {
+	Exercise
+	Text   string   // "This is a family {0}. Hi, how are {1} doing?"
+	Blanks []string // ["member", "you"]
+}
+
+func NewCompleteTheTextExercise(exercise Exercise, text string, blanks []string) CompleteTheTextExercise {
+	return CompleteTheTextExercise{
+		Exercise: exercise,
+		Text:     text,
+		Blanks:   blanks,
+	}
+}

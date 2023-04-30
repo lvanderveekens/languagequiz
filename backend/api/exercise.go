@@ -50,7 +50,7 @@ func (h *ExerciseHandler) CreateExercise(c *gin.Context) error {
 			return fmt.Errorf("failed to create exercise: %w", err)
 		}
 
-		dto = mapMultipleChoiceExerciseToDto(*exercise)
+		dto = newMultipleChoiceExerciseDto(*exercise)
 	case exercise.TypeCompleteTheSentence:
 		var req CreateCompleteTheSentenceExerciseRequest
 		if err := json.NewDecoder(bytes.NewReader(bodyBytes)).Decode(&req); err != nil {
@@ -65,7 +65,27 @@ func (h *ExerciseHandler) CreateExercise(c *gin.Context) error {
 			return fmt.Errorf("failed to create exercise: %w", err)
 		}
 
-		dto = mapCompleteTheSentenceExerciseToDto(*exercise)
+		dto = newCompleteTheSentenceExerciseDto(*exercise)
+	case exercise.TypeCompleteTheText:
+		var req CreateCompleteTheTextExerciseRequest
+		if err := json.NewDecoder(bytes.NewReader(bodyBytes)).Decode(&req); err != nil {
+			return NewError(http.StatusBadRequest, fmt.Sprintf("failed to decode request body as struct: %s", err.Error()))
+		}
+		if err := req.Validate(); err != nil {
+			return NewError(http.StatusBadRequest, err.Error())
+		}
+
+		cmd, err := req.toCommand()
+		if err != nil {
+			return NewError(http.StatusBadRequest, err.Error())
+		}
+
+		exercise, err := h.exerciseStorage.CreateCompleteTheTextExercise(*cmd)
+		if err != nil {
+			return fmt.Errorf("failed to create exercise: %w", err)
+		}
+
+		dto = newCompleteTheTextExerciseDto(*exercise)
 	default:
 		return NewError(http.StatusBadRequest, fmt.Sprintf("Unsupported exercise type: %v", req.Type))
 	}
@@ -93,84 +113,76 @@ func (h *ExerciseHandler) GetExercises(c *gin.Context) error {
 	return nil
 }
 
-func mapMultipleChoiceExerciseToDto(e exercise.MultipleChoiceExercise) MultipleChoiceExercise {
-	return newMultipleChoiceExercise(
-		NewExercise(e.ID, exercise.TypeMultipleChoice),
-		e.Question,
-		e.Options,
-		e.CorrectOption,
-	)
-}
-
-func mapCompleteTheSentenceExerciseToDto(e exercise.CompleteTheSentenceExercise) CompleteTheSentenceExercise {
-	return NewCompleteTheSentenceExercise(
-		NewExercise(e.ID, exercise.TypeCompleteTheSentence),
-		e.BeforeGap,
-		e.Gap,
-		e.AfterGap,
-	)
-}
-
 func mapExerciseToDto(e any) (any, error) {
 	switch e := e.(type) {
 	case exercise.MultipleChoiceExercise:
-		return mapMultipleChoiceExerciseToDto(e), nil
+		return newMultipleChoiceExerciseDto(e), nil
 	case exercise.CompleteTheSentenceExercise:
-		return mapCompleteTheSentenceExerciseToDto(e), nil
+		return newCompleteTheSentenceExerciseDto(e), nil
+	case exercise.CompleteTheTextExercise:
+		return newCompleteTheTextExerciseDto(e), nil
 	default:
 		return nil, fmt.Errorf("unknown exercise type: %T", e)
 	}
 }
 
-type Exercise struct {
+type ExerciseDto struct {
 	ID   string `json:"id"`
 	Type string `json:"type"`
 }
 
-func NewExercise(id, exerciseType string) Exercise {
-	return Exercise{
-		ID:   id,
+func newExerciseDto(e exercise.Exercise, exerciseType string) ExerciseDto {
+	return ExerciseDto{
+		ID:   e.ID,
 		Type: exerciseType,
 	}
 }
 
-type MultipleChoiceExercise struct {
-	Exercise
+type MultipleChoiceExerciseDto struct {
+	ExerciseDto
 	Question      string   `json:"question"`
 	Options       []string `json:"options"`
 	CorrectOption string   `json:"correctOption"`
 }
 
-func newMultipleChoiceExercise(
-	exercise Exercise,
-	question string,
-	options []string,
-	correctOption string,
-) MultipleChoiceExercise {
-	return MultipleChoiceExercise{
-		Exercise:      exercise,
-		Question:      question,
-		Options:       options,
-		CorrectOption: correctOption,
+func newMultipleChoiceExerciseDto(e exercise.MultipleChoiceExercise) MultipleChoiceExerciseDto {
+	return MultipleChoiceExerciseDto{
+		ExerciseDto:   newExerciseDto(e.Exercise, exercise.TypeMultipleChoice),
+		Question:      e.Question,
+		Options:       e.Options,
+		CorrectOption: e.CorrectOption,
 	}
 }
 
-type CompleteTheSentenceExercise struct {
-	Exercise
+type CompleteTheSentenceExerciseDto struct {
+	ExerciseDto
 	BeforeGap string `json:"beforeGap"`
 	Gap       string `json:"gap"`
 	AfterGap  string `json:"afterGap"`
 }
 
-func NewCompleteTheSentenceExercise(
-	exercise Exercise,
-	beforeGap, gap, afterGap string,
-) CompleteTheSentenceExercise {
-	return CompleteTheSentenceExercise{
-		Exercise:  exercise,
-		BeforeGap: beforeGap,
-		Gap:       gap,
-		AfterGap:  afterGap,
+func newCompleteTheSentenceExerciseDto(
+	e exercise.CompleteTheSentenceExercise,
+) CompleteTheSentenceExerciseDto {
+	return CompleteTheSentenceExerciseDto{
+		ExerciseDto: newExerciseDto(e.Exercise, exercise.TypeCompleteTheSentence),
+		BeforeGap:   e.BeforeGap,
+		Gap:         e.Gap,
+		AfterGap:    e.AfterGap,
+	}
+}
+
+type CompleteTheTextExerciseDto struct {
+	ExerciseDto
+	Text   string   `json:"text"`
+	Blanks []string `json:"blanks"`
+}
+
+func newCompleteTheTextExerciseDto(e exercise.CompleteTheTextExercise) CompleteTheTextExerciseDto {
+	return CompleteTheTextExerciseDto{
+		ExerciseDto: newExerciseDto(e.Exercise, exercise.TypeCompleteTheText),
+		Text:        e.Text,
+		Blanks:      e.Blanks,
 	}
 }
 
@@ -230,6 +242,26 @@ func (r *CreateCompleteTheSentenceExerciseRequest) Validate() error {
 	}
 	if r.AfterGap == "" {
 		return errors.New("required field is missing: afterGap")
+	}
+	return nil
+}
+
+type CreateCompleteTheTextExerciseRequest struct {
+	CreateExerciseRequest
+	Text   string   `json:"text"`
+	Blanks []string `json:"blanks"`
+}
+
+func (r *CreateCompleteTheTextExerciseRequest) toCommand() (*exercise.CreateCompleteTheTextExerciseCommand, error) {
+	return exercise.NewCreateCompleteTheTextExerciseCommand(r.Text, r.Blanks)
+}
+
+func (r *CreateCompleteTheTextExerciseRequest) Validate() error {
+	if r.Text == "" {
+		return errors.New("required field is missing: text")
+	}
+	if r.Blanks == nil {
+		return errors.New("required field is missing: blanks")
 	}
 	return nil
 }
