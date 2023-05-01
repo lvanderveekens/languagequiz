@@ -2,7 +2,6 @@ package exercise
 
 type Storage interface {
 	CreateMultipleChoiceExercise(e CreateMultipleChoiceExerciseCommand) (*MultipleChoiceExercise, error)
-	CreateCompleteTheSentenceExercise(e CreateCompleteTheSentenceExerciseCommand) (*CompleteTheSentenceExercise, error)
-	CreateCompleteTheTextExercise(e CreateCompleteTheTextExerciseCommand) (*CompleteTheTextExercise, error)
+	CreateFillInTheBlankExercise(e CreateFillInTheBlankExerciseCommand) (*FillInTheBlankExercise, error)
 	Find() ([]any, error)
 }

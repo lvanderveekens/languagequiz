@@ -1,6 +1,0 @@
-BEGIN;
-
-ALTER TABLE exercise ADD COLUMN sentence TEXT;
-ALTER TABLE exercise ADD COLUMN blank TEXT;
-
-COMMIT;

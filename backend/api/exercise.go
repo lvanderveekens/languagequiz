@@ -51,8 +51,8 @@ func (h *ExerciseHandler) CreateExercise(c *gin.Context) error {
 		}
 
 		dto = newMultipleChoiceExerciseDto(*exercise)
-	case exercise.TypeCompleteTheSentence:
-		var req CreateCompleteTheSentenceExerciseRequest
+	case exercise.TypeFillInTheBlank:
+		var req CreateFillInTheBlankExerciseRequest
 		if err := json.NewDecoder(bytes.NewReader(bodyBytes)).Decode(&req); err != nil {
 			return NewError(http.StatusBadRequest, fmt.Sprintf("failed to decode request body as struct: %s", err.Error()))
 		}
@@ -65,32 +65,12 @@ func (h *ExerciseHandler) CreateExercise(c *gin.Context) error {
 			return NewError(http.StatusBadRequest, err.Error())
 		}
 
-		exercise, err := h.exerciseStorage.CreateCompleteTheSentenceExercise(*cmd)
+		exercise, err := h.exerciseStorage.CreateFillInTheBlankExercise(*cmd)
 		if err != nil {
 			return fmt.Errorf("failed to create exercise: %w", err)
 		}
 
-		dto = newCompleteTheSentenceExerciseDto(*exercise)
-	case exercise.TypeCompleteTheText:
-		var req CreateCompleteTheTextExerciseRequest
-		if err := json.NewDecoder(bytes.NewReader(bodyBytes)).Decode(&req); err != nil {
-			return NewError(http.StatusBadRequest, fmt.Sprintf("failed to decode request body as struct: %s", err.Error()))
-		}
-		if err := req.Validate(); err != nil {
-			return NewError(http.StatusBadRequest, err.Error())
-		}
-
-		cmd, err := req.toCommand()
-		if err != nil {
-			return NewError(http.StatusBadRequest, err.Error())
-		}
-
-		exercise, err := h.exerciseStorage.CreateCompleteTheTextExercise(*cmd)
-		if err != nil {
-			return fmt.Errorf("failed to create exercise: %w", err)
-		}
-
-		dto = newCompleteTheTextExerciseDto(*exercise)
+		dto = newFillInTheBlankExerciseDto(*exercise)
 	default:
 		return NewError(http.StatusBadRequest, fmt.Sprintf("Unsupported exercise type: %v", req.Type))
 	}
@@ -122,10 +102,8 @@ func mapExerciseToDto(e any) (any, error) {
 	switch e := e.(type) {
 	case exercise.MultipleChoiceExercise:
 		return newMultipleChoiceExerciseDto(e), nil
-	case exercise.CompleteTheSentenceExercise:
-		return newCompleteTheSentenceExerciseDto(e), nil
-	case exercise.CompleteTheTextExercise:
-		return newCompleteTheTextExerciseDto(e), nil
+	case exercise.FillInTheBlankExercise:
+		return newFillInTheBlankExerciseDto(e), nil
 	default:
 		return nil, fmt.Errorf("unknown exercise type: %T", e)
 	}
@@ -145,47 +123,31 @@ func newExerciseDto(e exercise.ExerciseBase, exerciseType string) ExerciseDto {
 
 type MultipleChoiceExerciseDto struct {
 	ExerciseDto
-	Question      string   `json:"question"`
+	Prompt        string   `json:"prompt"`
 	Options       []string `json:"options"`
-	CorrectOption string   `json:"correctOption"`
+	CorrectAnswer string   `json:"correctAnswer"`
 }
 
 func newMultipleChoiceExerciseDto(e exercise.MultipleChoiceExercise) MultipleChoiceExerciseDto {
 	return MultipleChoiceExerciseDto{
 		ExerciseDto:   newExerciseDto(e.ExerciseBase, exercise.TypeMultipleChoice),
-		Question:      e.Question,
+		Prompt:        e.Prompt,
 		Options:       e.Options,
-		CorrectOption: e.CorrectOption,
+		CorrectAnswer: e.CorrectAnswer,
 	}
 }
 
-type CompleteTheSentenceExerciseDto struct {
+type FillInTheBlankExerciseDto struct {
 	ExerciseDto
-	Sentence string `json:"sentence"`
-	Blank    string `json:"blank"`
+	Prompt        string `json:"prompt"`
+	CorrectAnswer string `json:"correctAnswer"`
 }
 
-func newCompleteTheSentenceExerciseDto(
-	e exercise.CompleteTheSentenceExercise,
-) CompleteTheSentenceExerciseDto {
-	return CompleteTheSentenceExerciseDto{
-		ExerciseDto: newExerciseDto(e.ExerciseBase, exercise.TypeCompleteTheSentence),
-		Sentence:    e.Sentence,
-		Blank:       e.Blank,
-	}
-}
-
-type CompleteTheTextExerciseDto struct {
-	ExerciseDto
-	Text   string   `json:"text"`
-	Blanks []string `json:"blanks"`
-}
-
-func newCompleteTheTextExerciseDto(e exercise.CompleteTheTextExercise) CompleteTheTextExerciseDto {
-	return CompleteTheTextExerciseDto{
-		ExerciseDto: newExerciseDto(e.ExerciseBase, exercise.TypeCompleteTheText),
-		Text:        e.Text,
-		Blanks:      e.Blanks,
+func newFillInTheBlankExerciseDto(e exercise.FillInTheBlankExercise) FillInTheBlankExerciseDto {
+	return FillInTheBlankExerciseDto{
+		ExerciseDto:   newExerciseDto(e.ExerciseBase, exercise.TypeFillInTheBlank),
+		Prompt:        e.Prompt,
+		CorrectAnswer: e.CorrectAnswer,
 	}
 }
 
@@ -195,71 +157,51 @@ type CreateExerciseRequest struct {
 
 type CreateMultipleChoiceExerciseRequest struct {
 	CreateExerciseRequest
-	Question      string   `json:"question"`
+	Prompt        string   `json:"prompt"`
 	Options       []string `json:"options"`
-	CorrectOption string   `json:"correctOption"`
+	CorrectAnswer string   `json:"correctAnswer"`
 }
 
 func (r *CreateMultipleChoiceExerciseRequest) toCommand() exercise.CreateMultipleChoiceExerciseCommand {
 	return exercise.NewCreateMultipleChoiceExerciseCommand(
-		r.Question,
+		r.Prompt,
 		r.Options,
-		r.CorrectOption,
+		r.CorrectAnswer,
 	)
 }
 
 func (r *CreateMultipleChoiceExerciseRequest) Validate() error {
-	if r.Question == "" {
-		return errors.New("required field is missing: question")
+	if r.Prompt == "" {
+		return errors.New("required field is missing: prompt")
 	}
 	if r.Options == nil {
 		return errors.New("required field is missing: options")
 	}
-	if r.CorrectOption == "" {
-		return errors.New("required field is missing: correctOption")
+	if r.CorrectAnswer == "" {
+		return errors.New("required field is missing: correctAnswer")
 	}
 	return nil
 }
 
-type CreateCompleteTheSentenceExerciseRequest struct {
+type CreateFillInTheBlankExerciseRequest struct {
 	CreateExerciseRequest
-	Sentence string `json:"sentence"`
-	Blank    string `json:"blank"`
+	Prompt        string `json:"prompt"`
+	CorrectAnswer string `json:"correctAnswer"`
 }
 
-func (r *CreateCompleteTheSentenceExerciseRequest) toCommand() (*exercise.CreateCompleteTheSentenceExerciseCommand, error) {
-	return exercise.NewCreateCompleteTheSentenceExerciseCommand(
-		r.Sentence,
-		r.Blank,
+func (r *CreateFillInTheBlankExerciseRequest) toCommand() (*exercise.CreateFillInTheBlankExerciseCommand, error) {
+	return exercise.NewCreateFillInTheBlankExerciseCommand(
+		r.Prompt,
+		r.CorrectAnswer,
 	)
 }
 
-func (r *CreateCompleteTheSentenceExerciseRequest) Validate() error {
-	if r.Sentence == "" {
-		return errors.New("required field is missing: sentence")
+func (r *CreateFillInTheBlankExerciseRequest) Validate() error {
+	if r.Prompt == "" {
+		return errors.New("required field is missing: prompt")
 	}
-	if r.Blank == "" {
-		return errors.New("required field is missing: blank")
-	}
-	return nil
-}
-
-type CreateCompleteTheTextExerciseRequest struct {
-	CreateExerciseRequest
-	Text   string   `json:"text"`
-	Blanks []string `json:"blanks"`
-}
-
-func (r *CreateCompleteTheTextExerciseRequest) toCommand() (*exercise.CreateCompleteTheTextExerciseCommand, error) {
-	return exercise.NewCreateCompleteTheTextExerciseCommand(r.Text, r.Blanks)
-}
-
-func (r *CreateCompleteTheTextExerciseRequest) Validate() error {
-	if r.Text == "" {
-		return errors.New("required field is missing: text")
-	}
-	if r.Blanks == nil {
-		return errors.New("required field is missing: blanks")
+	if r.CorrectAnswer == "" {
+		return errors.New("required field is missing: correctAnswer")
 	}
 	return nil
 }

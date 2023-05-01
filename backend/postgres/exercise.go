@@ -28,10 +28,10 @@ func (s *ExerciseStorage) CreateMultipleChoiceExercise(
 	}
 
 	row := s.dbpool.QueryRow(context.Background(), `
-		INSERT INTO exercise (id, type, question, options, correct_option) 
+		INSERT INTO exercise (id, type, prompt, options, correct_answer) 
 		VALUES ($1, $2, $3, $4, $5) 
 		RETURNING *
-	`, id, exercise.TypeMultipleChoice, e.Question, e.Options, e.CorrectOption)
+	`, id, exercise.TypeMultipleChoice, e.Prompt, e.Options, e.CorrectAnswer)
 
 	entity, err := mapToEntity(row)
 	if err != nil {
@@ -41,48 +41,26 @@ func (s *ExerciseStorage) CreateMultipleChoiceExercise(
 	return mapToMultipleChoiceExercise(*entity), nil
 }
 
-func (s *ExerciseStorage) CreateCompleteTheSentenceExercise(
-	e exercise.CreateCompleteTheSentenceExerciseCommand,
-) (*exercise.CompleteTheSentenceExercise, error) {
+func (s *ExerciseStorage) CreateFillInTheBlankExercise(
+	e exercise.CreateFillInTheBlankExerciseCommand,
+) (*exercise.FillInTheBlankExercise, error) {
 	id, err := uuid.NewRandom()
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate new UUID: %w", err)
 	}
 
 	row := s.dbpool.QueryRow(context.Background(), `
-		INSERT INTO exercise (id, type, sentence, blank) 
+		INSERT INTO exercise (id, type, prompt, correct_answer) 
 		VALUES ($1, $2, $3, $4) 
 		RETURNING *
-	`, id, exercise.TypeCompleteTheSentence, e.Sentence, e.Blank)
+	`, id, exercise.TypeFillInTheBlank, e.Prompt, e.CorrectAnswer)
 
 	entity, err := mapToEntity(row)
 	if err != nil {
 		return nil, fmt.Errorf("failed to map row to entity: %w", err)
 	}
 
-	return mapToCompleteTheSentenceExercise(*entity), nil
-}
-
-func (s *ExerciseStorage) CreateCompleteTheTextExercise(
-	e exercise.CreateCompleteTheTextExerciseCommand,
-) (*exercise.CompleteTheTextExercise, error) {
-	id, err := uuid.NewRandom()
-	if err != nil {
-		return nil, fmt.Errorf("failed to generate new UUID: %w", err)
-	}
-
-	row := s.dbpool.QueryRow(context.Background(), `
-		INSERT INTO exercise (id, type, text, blanks) 
-		VALUES ($1, $2, $3, $4) 
-		RETURNING *
-	`, id, exercise.TypeCompleteTheText, e.Text, e.Blanks)
-
-	entity, err := mapToEntity(row)
-	if err != nil {
-		return nil, fmt.Errorf("failed to map row to entity: %w", err)
-	}
-
-	return mapToCompleteTheTextExercise(*entity), nil
+	return mapToFillInTheBlankExercise(*entity), nil
 }
 
 func mapToEntity(row pgx.Row) (*Exercise, error) {
@@ -92,13 +70,9 @@ func mapToEntity(row pgx.Row) (*Exercise, error) {
 		&entity.CreatedAt,
 		&entity.UpdatedAt,
 		&entity.Type,
-		&entity.Question,
+		&entity.Prompt,
 		&entity.Options,
-		&entity.CorrectOption,
-		&entity.Sentence,
-		&entity.Blank,
-		&entity.Text,
-		&entity.Blanks,
+		&entity.CorrectAnswer,
 	)
 	return &entity, err
 }
@@ -131,27 +105,18 @@ func (s *ExerciseStorage) Find() ([]any, error) {
 func mapToMultipleChoiceExercise(entity Exercise) *exercise.MultipleChoiceExercise {
 	e := exercise.NewMultipleChoiceExercise(
 		exercise.NewExerciseBase(entity.ID.String(), entity.CreatedAt, entity.UpdatedAt),
-		*entity.Question,
+		*entity.Prompt,
 		*entity.Options,
-		*entity.CorrectOption,
+		*entity.CorrectAnswer,
 	)
 	return &e
 }
 
-func mapToCompleteTheSentenceExercise(entity Exercise) *exercise.CompleteTheSentenceExercise {
-	e := exercise.NewCompleteTheSentenceExercise(
+func mapToFillInTheBlankExercise(entity Exercise) *exercise.FillInTheBlankExercise {
+	e := exercise.NewFillInTheBlankExercise(
 		exercise.NewExerciseBase(entity.ID.String(), entity.CreatedAt, entity.UpdatedAt),
-		*entity.Sentence,
-		*entity.Blank,
-	)
-	return &e
-}
-
-func mapToCompleteTheTextExercise(entity Exercise) *exercise.CompleteTheTextExercise {
-	e := exercise.NewCompleteTheTextExercise(
-		exercise.NewExerciseBase(entity.ID.String(), entity.CreatedAt, entity.UpdatedAt),
-		*entity.Text,
-		*entity.Blanks,
+		*entity.Prompt,
+		*entity.CorrectAnswer,
 	)
 	return &e
 }
@@ -172,10 +137,8 @@ func mapToExercise(entity Exercise) (any, error) {
 	switch entity.Type {
 	case exercise.TypeMultipleChoice:
 		return *mapToMultipleChoiceExercise(entity), nil
-	case exercise.TypeCompleteTheSentence:
-		return *mapToCompleteTheSentenceExercise(entity), nil
-	case exercise.TypeCompleteTheText:
-		return *mapToCompleteTheTextExercise(entity), nil
+	case exercise.TypeFillInTheBlank:
+		return *mapToFillInTheBlankExercise(entity), nil
 	default:
 		return nil, fmt.Errorf("unknown exercise type: %s", entity.Type)
 	}
@@ -187,16 +150,7 @@ type Exercise struct {
 	UpdatedAt time.Time
 	Type      string
 
-	// multiple choice fields
-	Question      *string
+	Prompt        *string
 	Options       *[]string
-	CorrectOption *string
-
-	// complete the sentence fields
-	Sentence *string
-	Blank    *string
-
-	// complete the text fields
-	Text   *string
-	Blanks *[]string
+	CorrectAnswer *string
 }

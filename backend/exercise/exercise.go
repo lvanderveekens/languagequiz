@@ -1,17 +1,8 @@
 package exercise
 
 import (
-	"reflect"
 	"time"
 )
-
-type SingleAnswerExercise interface {
-	CheckAnswer(answer string) bool
-}
-
-type MultipleAnswersExercise interface {
-	CheckAnswers(answers []string) bool
-}
 
 type ExerciseBase struct {
 	ID        string
@@ -29,61 +20,43 @@ func NewExerciseBase(id string, createdAt, updatedAt time.Time) ExerciseBase {
 
 type MultipleChoiceExercise struct {
 	ExerciseBase
-	Question      string
+	Prompt        string
 	Options       []string
-	CorrectOption string
+	CorrectAnswer string
 }
 
 func NewMultipleChoiceExercise(
 	exerciseBase ExerciseBase,
-	question string,
+	prompt string,
 	options []string,
-	correctOption string,
+	correctAnswer string,
 ) MultipleChoiceExercise {
 	return MultipleChoiceExercise{
 		ExerciseBase:  exerciseBase,
-		Question:      question,
+		Prompt:        prompt,
 		Options:       options,
-		CorrectOption: correctOption,
+		CorrectAnswer: correctAnswer,
 	}
 }
 
 func (e *MultipleChoiceExercise) CheckAnswer(answer string) bool {
-	return e.CorrectOption == answer
+	return e.CorrectAnswer == answer
 }
 
-type CompleteTheSentenceExercise struct {
+type FillInTheBlankExercise struct {
 	ExerciseBase
-	Sentence string // e.g. "This is a {0} truck."
-	Blank    string // e.g. "fire"
+	Prompt        string // e.g. "This is a {0} truck."
+	CorrectAnswer string // e.g. "fire"
 }
 
-func NewCompleteTheSentenceExercise(exercise ExerciseBase, sentence, blank string) CompleteTheSentenceExercise {
-	return CompleteTheSentenceExercise{
-		ExerciseBase: exercise,
-		Sentence:     sentence,
-		Blank:        blank,
+func NewFillInTheBlankExercise(exercise ExerciseBase, prompt, correctAnswer string) FillInTheBlankExercise {
+	return FillInTheBlankExercise{
+		ExerciseBase:  exercise,
+		Prompt:        prompt,
+		CorrectAnswer: correctAnswer,
 	}
 }
 
-func (e *CompleteTheSentenceExercise) CheckAnswer(answer string) bool {
-	return e.Blank == answer
-}
-
-type CompleteTheTextExercise struct {
-	ExerciseBase
-	Text   string   // e.g. "This is a family {0}. Hi, how are {1} doing?"
-	Blanks []string // e.g. ["member", "you"]
-}
-
-func NewCompleteTheTextExercise(exercise ExerciseBase, text string, blanks []string) CompleteTheTextExercise {
-	return CompleteTheTextExercise{
-		ExerciseBase: exercise,
-		Text:         text,
-		Blanks:       blanks,
-	}
-}
-
-func (e *CompleteTheTextExercise) CheckAnswers(answers []string) bool {
-	return reflect.DeepEqual(e.Blanks, answers)
+func (e *FillInTheBlankExercise) CheckAnswer(answer string) bool {
+	return e.CorrectAnswer == answer
 }
