@@ -130,7 +130,7 @@ func (s *ExerciseStorage) Find() ([]any, error) {
 
 func mapToMultipleChoiceExercise(entity Exercise) *exercise.MultipleChoiceExercise {
 	e := exercise.NewMultipleChoiceExercise(
-		exercise.New(entity.ID.String(), entity.CreatedAt, entity.UpdatedAt),
+		exercise.NewExerciseBase(entity.ID.String(), entity.CreatedAt, entity.UpdatedAt),
 		*entity.Question,
 		*entity.Options,
 		*entity.CorrectOption,
@@ -140,7 +140,7 @@ func mapToMultipleChoiceExercise(entity Exercise) *exercise.MultipleChoiceExerci
 
 func mapToCompleteTheSentenceExercise(entity Exercise) *exercise.CompleteTheSentenceExercise {
 	e := exercise.NewCompleteTheSentenceExercise(
-		exercise.New(entity.ID.String(), entity.CreatedAt, entity.UpdatedAt),
+		exercise.NewExerciseBase(entity.ID.String(), entity.CreatedAt, entity.UpdatedAt),
 		*entity.Sentence,
 		*entity.Blank,
 	)
@@ -149,7 +149,7 @@ func mapToCompleteTheSentenceExercise(entity Exercise) *exercise.CompleteTheSent
 
 func mapToCompleteTheTextExercise(entity Exercise) *exercise.CompleteTheTextExercise {
 	e := exercise.NewCompleteTheTextExercise(
-		exercise.New(entity.ID.String(), entity.CreatedAt, entity.UpdatedAt),
+		exercise.NewExerciseBase(entity.ID.String(), entity.CreatedAt, entity.UpdatedAt),
 		*entity.Text,
 		*entity.Blanks,
 	)

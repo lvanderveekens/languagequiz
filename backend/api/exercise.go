@@ -136,7 +136,7 @@ type ExerciseDto struct {
 	Type string `json:"type"`
 }
 
-func newExerciseDto(e exercise.Exercise, exerciseType string) ExerciseDto {
+func newExerciseDto(e exercise.ExerciseBase, exerciseType string) ExerciseDto {
 	return ExerciseDto{
 		ID:   e.ID,
 		Type: exerciseType,
@@ -152,7 +152,7 @@ type MultipleChoiceExerciseDto struct {
 
 func newMultipleChoiceExerciseDto(e exercise.MultipleChoiceExercise) MultipleChoiceExerciseDto {
 	return MultipleChoiceExerciseDto{
-		ExerciseDto:   newExerciseDto(e.Exercise, exercise.TypeMultipleChoice),
+		ExerciseDto:   newExerciseDto(e.ExerciseBase, exercise.TypeMultipleChoice),
 		Question:      e.Question,
 		Options:       e.Options,
 		CorrectOption: e.CorrectOption,
@@ -169,7 +169,7 @@ func newCompleteTheSentenceExerciseDto(
 	e exercise.CompleteTheSentenceExercise,
 ) CompleteTheSentenceExerciseDto {
 	return CompleteTheSentenceExerciseDto{
-		ExerciseDto: newExerciseDto(e.Exercise, exercise.TypeCompleteTheSentence),
+		ExerciseDto: newExerciseDto(e.ExerciseBase, exercise.TypeCompleteTheSentence),
 		Sentence:    e.Sentence,
 		Blank:       e.Blank,
 	}
@@ -183,7 +183,7 @@ type CompleteTheTextExerciseDto struct {
 
 func newCompleteTheTextExerciseDto(e exercise.CompleteTheTextExercise) CompleteTheTextExerciseDto {
 	return CompleteTheTextExerciseDto{
-		ExerciseDto: newExerciseDto(e.Exercise, exercise.TypeCompleteTheText),
+		ExerciseDto: newExerciseDto(e.ExerciseBase, exercise.TypeCompleteTheText),
 		Text:        e.Text,
 		Blanks:      e.Blanks,
 	}
