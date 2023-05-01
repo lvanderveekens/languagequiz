@@ -9,7 +9,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/lvanderveekens/testmaker/exercise"
+	"github.com/lvanderveekens/testparrot/exercise"
 )
 
 type ExerciseHandler struct {

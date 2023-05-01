@@ -1,3 +1,3 @@
-# testmaker
+# testparrot
 
-A platform where you can take tests.
+A platform where you can make and take tests.

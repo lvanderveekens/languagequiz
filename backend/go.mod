@@ -1,4 +1,4 @@
-module github.com/lvanderveekens/testmaker
+module github.com/lvanderveekens/testparrot
 
 go 1.20
 
