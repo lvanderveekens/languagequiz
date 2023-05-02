@@ -15,9 +15,7 @@ export default async function handler(
   }
 }
 
-type Exercise = {
-  id: string
-};
+type Exercise = { };
 
 type ErrorResponse = {
   message: string
