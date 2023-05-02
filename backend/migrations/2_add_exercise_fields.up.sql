@@ -2,8 +2,8 @@ BEGIN;
 
 ALTER TABLE exercise ADD COLUMN "type" TEXT NOT NULL;
 
-ALTER TABLE exercise ADD COLUMN prompt TEXT;
+ALTER TABLE exercise ADD COLUMN question TEXT;
 ALTER TABLE exercise ADD COLUMN options TEXT[];
-ALTER TABLE exercise ADD COLUMN correct_answer TEXT;
+ALTER TABLE exercise ADD COLUMN answer TEXT;
 
 COMMIT;

@@ -23,6 +23,7 @@ func (s *Server) Start(port int) error {
 
 	r.GET("/v1/exercises", createHandlerFunc(s.handlers.exercise.GetExercises))
 	r.POST("/v1/exercises", createHandlerFunc(s.handlers.exercise.CreateExercise))
+	r.POST("/v1/exercises/answers", createHandlerFunc(s.handlers.exercise.SubmitAnswers))
 
 	return r.Run(":" + strconv.Itoa(port))
 }

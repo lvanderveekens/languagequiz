@@ -28,10 +28,10 @@ func (s *ExerciseStorage) CreateMultipleChoiceExercise(
 	}
 
 	row := s.dbpool.QueryRow(context.Background(), `
-		INSERT INTO exercise (id, type, prompt, options, correct_answer) 
+		INSERT INTO exercise (id, type, question, options, answer) 
 		VALUES ($1, $2, $3, $4, $5) 
 		RETURNING *
-	`, id, exercise.TypeMultipleChoice, e.Prompt, e.Options, e.CorrectAnswer)
+	`, id, exercise.TypeMultipleChoice, e.Question, e.Options, e.Answer)
 
 	entity, err := mapToEntity(row)
 	if err != nil {
@@ -50,10 +50,10 @@ func (s *ExerciseStorage) CreateFillInTheBlankExercise(
 	}
 
 	row := s.dbpool.QueryRow(context.Background(), `
-		INSERT INTO exercise (id, type, prompt, correct_answer) 
+		INSERT INTO exercise (id, type, question, answer) 
 		VALUES ($1, $2, $3, $4) 
 		RETURNING *
-	`, id, exercise.TypeFillInTheBlank, e.Prompt, e.CorrectAnswer)
+	`, id, exercise.TypeFillInTheBlank, e.Question, e.Answer)
 
 	entity, err := mapToEntity(row)
 	if err != nil {
@@ -70,14 +70,14 @@ func mapToEntity(row pgx.Row) (*Exercise, error) {
 		&entity.CreatedAt,
 		&entity.UpdatedAt,
 		&entity.Type,
-		&entity.Prompt,
+		&entity.Question,
 		&entity.Options,
-		&entity.CorrectAnswer,
+		&entity.Answer,
 	)
 	return &entity, err
 }
 
-func (s *ExerciseStorage) Find() ([]any, error) {
+func (s *ExerciseStorage) Find() ([]exercise.Exercise, error) {
 	rows, err := s.dbpool.Query(context.Background(), `
 		SELECT *
 		FROM exercise
@@ -102,27 +102,51 @@ func (s *ExerciseStorage) Find() ([]any, error) {
 	return mapToExercises(entities)
 }
 
+func (s *ExerciseStorage) FindByID(id string) (exercise.Exercise, error) {
+	uuid, err := uuid.Parse(id)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse id as uuid: %w", err)
+	}
+
+	row := s.dbpool.QueryRow(context.Background(), `
+		SELECT *
+		FROM exercise
+		WHERE id = $1
+	`, uuid)
+
+	entity, err := mapToEntity(row)
+	if err != nil {
+		return nil, fmt.Errorf("failed to map row to entity: %w", err)
+	}
+
+	return mapToExercise(*entity)
+}
+
 func mapToMultipleChoiceExercise(entity Exercise) *exercise.MultipleChoiceExercise {
 	e := exercise.NewMultipleChoiceExercise(
-		exercise.NewExerciseBase(entity.ID.String(), entity.CreatedAt, entity.UpdatedAt),
-		*entity.Prompt,
+		entity.ID.String(),
+		entity.CreatedAt,
+		entity.UpdatedAt,
+		*entity.Question,
 		*entity.Options,
-		*entity.CorrectAnswer,
+		*entity.Answer,
 	)
 	return &e
 }
 
 func mapToFillInTheBlankExercise(entity Exercise) *exercise.FillInTheBlankExercise {
 	e := exercise.NewFillInTheBlankExercise(
-		exercise.NewExerciseBase(entity.ID.String(), entity.CreatedAt, entity.UpdatedAt),
-		*entity.Prompt,
-		*entity.CorrectAnswer,
+		entity.ID.String(),
+		entity.CreatedAt,
+		entity.UpdatedAt,
+		*entity.Question,
+		*entity.Answer,
 	)
 	return &e
 }
 
-func mapToExercises(entities []Exercise) ([]any, error) {
-	exercises := make([]any, 0)
+func mapToExercises(entities []Exercise) ([]exercise.Exercise, error) {
+	exercises := make([]exercise.Exercise, 0)
 	for _, entity := range entities {
 		exercise, err := mapToExercise(entity)
 		if err != nil {
@@ -133,12 +157,12 @@ func mapToExercises(entities []Exercise) ([]any, error) {
 	return exercises, nil
 }
 
-func mapToExercise(entity Exercise) (any, error) {
+func mapToExercise(entity Exercise) (exercise.Exercise, error) {
 	switch entity.Type {
 	case exercise.TypeMultipleChoice:
-		return *mapToMultipleChoiceExercise(entity), nil
+		return mapToMultipleChoiceExercise(entity), nil
 	case exercise.TypeFillInTheBlank:
-		return *mapToFillInTheBlankExercise(entity), nil
+		return mapToFillInTheBlankExercise(entity), nil
 	default:
 		return nil, fmt.Errorf("unknown exercise type: %s", entity.Type)
 	}
@@ -150,7 +174,7 @@ type Exercise struct {
 	UpdatedAt time.Time
 	Type      string
 
-	Prompt        *string
-	Options       *[]string
-	CorrectAnswer *string
+	Question *string
+	Options  *[]string
+	Answer   *string
 }

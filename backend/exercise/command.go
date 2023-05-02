@@ -8,42 +8,42 @@ import (
 var placeholderRegex = regexp.MustCompile(`{(\d+)}`)
 
 type CreateMultipleChoiceExerciseCommand struct {
-	Prompt        string
-	Options       []string
-	CorrectAnswer string
+	Question string
+	Options  []string
+	Answer   string
 }
 
 func NewCreateMultipleChoiceExerciseCommand(
-	prompt string,
+	question string,
 	options []string,
-	correctAnswer string,
+	answer string,
 ) CreateMultipleChoiceExerciseCommand {
 	return CreateMultipleChoiceExerciseCommand{
-		Prompt:        prompt,
-		Options:       options,
-		CorrectAnswer: correctAnswer,
+		Question: question,
+		Options:  options,
+		Answer:   answer,
 	}
 }
 
 type CreateFillInTheBlankExerciseCommand struct {
-	Prompt        string // e.g. "This is a {0} truck."
-	CorrectAnswer string // e.g. "fire"
+	Question string // e.g. "This is a {0} truck."
+	Answer   string // e.g. "fire"
 }
 
-func NewCreateFillInTheBlankExerciseCommand(prompt, correctAnswer string) (*CreateFillInTheBlankExerciseCommand, error) {
-	placeholders := placeholderRegex.FindAllStringSubmatch(prompt, -1)
+func NewCreateFillInTheBlankExerciseCommand(question, answer string) (*CreateFillInTheBlankExerciseCommand, error) {
+	placeholders := placeholderRegex.FindAllStringSubmatch(question, -1)
 	if len(placeholders) == 0 {
-		return nil, errors.New("no placeholder found in prompt")
+		return nil, errors.New("no placeholder found in question")
 	}
 	if len(placeholders) > 1 {
-		return nil, errors.New("more than one placeholder found in prompt")
+		return nil, errors.New("more than one placeholder found in question")
 	}
 	if placeholders[0][1] != "0" {
-		return nil, errors.New("placeholder {0} not found in prompt")
+		return nil, errors.New("placeholder {0} not found in question")
 	}
 
 	return &CreateFillInTheBlankExerciseCommand{
-		Prompt:        prompt,
-		CorrectAnswer: correctAnswer,
+		Question: question,
+		Answer:   answer,
 	}, nil
 }

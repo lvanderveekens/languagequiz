@@ -4,59 +4,94 @@ import (
 	"time"
 )
 
-type ExerciseBase struct {
+type Exercise interface {
+	CheckAnswer(answer any) bool
+	GetAnswer() any
+	GetType() string
+}
+
+type exerciseBase struct {
 	ID        string
+	Type      string
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
 
-func NewExerciseBase(id string, createdAt, updatedAt time.Time) ExerciseBase {
-	return ExerciseBase{
+func newExerciseBase(id, exerciseType string, createdAt, updatedAt time.Time) exerciseBase {
+	return exerciseBase{
 		ID:        id,
+		Type:      exerciseType,
 		CreatedAt: createdAt,
 		UpdatedAt: updatedAt,
 	}
 }
 
 type MultipleChoiceExercise struct {
-	ExerciseBase
-	Prompt        string
-	Options       []string
-	CorrectAnswer string
+	exerciseBase
+	Question string
+	Options  []string
+	Answer   string
 }
 
 func NewMultipleChoiceExercise(
-	exerciseBase ExerciseBase,
-	prompt string,
+	id string,
+	createdAt, updatedAt time.Time,
+	question string,
 	options []string,
-	correctAnswer string,
+	answer string,
 ) MultipleChoiceExercise {
 	return MultipleChoiceExercise{
-		ExerciseBase:  exerciseBase,
-		Prompt:        prompt,
-		Options:       options,
-		CorrectAnswer: correctAnswer,
+		exerciseBase: newExerciseBase(id, TypeMultipleChoice, createdAt, updatedAt),
+		Question:     question,
+		Options:      options,
+		Answer:       answer,
 	}
 }
 
-func (e *MultipleChoiceExercise) CheckAnswer(answer string) bool {
-	return e.CorrectAnswer == answer
+func (e *MultipleChoiceExercise) CheckAnswer(answer any) bool {
+	if answer, ok := answer.(string); ok {
+		return e.Answer == answer
+	}
+	return false
+}
+
+func (e *MultipleChoiceExercise) GetAnswer() any {
+	return e.Answer
+}
+
+func (e *MultipleChoiceExercise) GetType() string {
+	return e.Type
 }
 
 type FillInTheBlankExercise struct {
-	ExerciseBase
-	Prompt        string // e.g. "This is a {0} truck."
-	CorrectAnswer string // e.g. "fire"
+	exerciseBase
+	Question string // e.g. "This is a {0} truck."
+	Answer   string // e.g. "fire"
 }
 
-func NewFillInTheBlankExercise(exercise ExerciseBase, prompt, correctAnswer string) FillInTheBlankExercise {
+func NewFillInTheBlankExercise(
+	id string,
+	createdAt, updatedAt time.Time,
+	question, answer string,
+) FillInTheBlankExercise {
 	return FillInTheBlankExercise{
-		ExerciseBase:  exercise,
-		Prompt:        prompt,
-		CorrectAnswer: correctAnswer,
+		exerciseBase: newExerciseBase(id, TypeFillInTheBlank, createdAt, updatedAt),
+		Question:     question,
+		Answer:       answer,
 	}
 }
 
-func (e *FillInTheBlankExercise) CheckAnswer(answer string) bool {
-	return e.CorrectAnswer == answer
+func (e *FillInTheBlankExercise) CheckAnswer(answer any) bool {
+	if answer, ok := answer.(string); ok {
+		return e.Answer == answer
+	}
+	return false
+}
+
+func (e *FillInTheBlankExercise) GetAnswer() any {
+	return e.Answer
+}
+
+func (e *FillInTheBlankExercise) GetType() string {
+	return e.Type
 }
