@@ -236,7 +236,7 @@ type SubmitAnswersRequest struct {
 
 type ExerciseSubmission struct {
 	ExerciseID string `json:"exerciseId"`
-	Answer     string `json:"answer"`
+	Answer     any    `json:"answer"`
 }
 
 type SubmitAnswersResponse struct {
