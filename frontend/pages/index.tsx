@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google'
 import { useEffect, useState } from 'react'
 import MultipleChoiceExercise from './multiple-choice-exercise'
 import FillInTheBlankExercise from './fill-in-the-blank-exercise'
+import SentenceCorrectionExercise from './sentence-correction-exercise'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -10,7 +11,8 @@ type Exercise = {
   id: string;
   type: string;
   question?: string;
-  options?: string[];
+  choices?: string[];
+  sentence?: string;
 };
 
 export default function Home() {
@@ -77,7 +79,7 @@ export default function Home() {
                     <MultipleChoiceExercise
                       key={exercise.id}
                       question={exercise.question!}
-                      options={exercise.options!}
+                      choices={exercise.choices!}
                       answer={answers[i]}
                       setAnswer={setAnswer(i)}
                     />
@@ -87,6 +89,15 @@ export default function Home() {
                     <FillInTheBlankExercise
                       key={exercise.id}
                       question={exercise.question!}
+                      answer={answers[i]}
+                      setAnswer={setAnswer(i)}
+                    />
+                  );
+                case "sentenceCorrection":
+                  return (
+                    <SentenceCorrectionExercise
+                      key={exercise.id}
+                      sentence={exercise.sentence!}
                       answer={answers[i]}
                       setAnswer={setAnswer(i)}
                     />

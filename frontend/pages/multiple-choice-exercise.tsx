@@ -3,26 +3,32 @@ import { ChangeEvent } from 'react';
 
 type Props = {
   question: string
-  options: string[]
+  choices: string[]
   answer?: string
   setAnswer: (answer: string) => void
 };
 
-const MultipleChoiceExercise: React.FC<Props> = ({ question, options, answer, setAnswer }) => {
+const MultipleChoiceExercise: React.FC<Props> = ({
+  question,
+  choices,
+  answer,
+  setAnswer,
+}) => {
   return (
     <div className="border border-black">
+      <div className='font-bold'>Multiple choice</div>
       <div>{question}</div>
       <div>
-        {options.map((option: string) => (
-          <div key={option}>
+        {choices.map((choice: string) => (
+          <div key={choice}>
             <label>
               <input
                 type="radio"
-                value={option ?? ''}
-                checked={answer === option}
+                value={choice ?? ""}
+                checked={answer === choice}
                 onChange={(event) => setAnswer(event.target.value)}
               />
-              {option}
+              {choice}
             </label>
           </div>
         ))}

@@ -2,48 +2,73 @@ package exercise
 
 import (
 	"errors"
+	"fmt"
 	"regexp"
+
+	"golang.org/x/exp/slices"
 )
 
-var placeholderRegex = regexp.MustCompile(`{(\d+)}`)
+var blankRegex = regexp.MustCompile(`______`)
 
 type CreateMultipleChoiceExerciseCommand struct {
 	Question string
-	Options  []string
+	Choices  []string
 	Answer   string
 }
 
 func NewCreateMultipleChoiceExerciseCommand(
 	question string,
-	options []string,
+	choices []string,
 	answer string,
-) CreateMultipleChoiceExerciseCommand {
-	return CreateMultipleChoiceExerciseCommand{
-		Question: question,
-		Options:  options,
-		Answer:   answer,
+) (*CreateMultipleChoiceExerciseCommand, error) {
+	if len(choices) != 4 {
+		return nil, fmt.Errorf("expected 4 choices, found: %d", len(choices))
 	}
+	if !slices.Contains(choices, answer) {
+		return nil, fmt.Errorf("choices do not contain answer")
+	}
+
+	return &CreateMultipleChoiceExerciseCommand{
+		Question: question,
+		Choices:  choices,
+		Answer:   answer,
+	}, nil
 }
 
 type CreateFillInTheBlankExerciseCommand struct {
-	Question string // e.g. "This is a {0} truck."
+	Question string // e.g. "This is a ______ truck."
 	Answer   string // e.g. "fire"
 }
 
 func NewCreateFillInTheBlankExerciseCommand(question, answer string) (*CreateFillInTheBlankExerciseCommand, error) {
-	placeholders := placeholderRegex.FindAllStringSubmatch(question, -1)
-	if len(placeholders) == 0 {
-		return nil, errors.New("no placeholder found in question")
+	blanks := blankRegex.FindAllStringSubmatch(question, -1)
+	if len(blanks) == 0 {
+		return nil, errors.New("no blank found in question")
 	}
-	if len(placeholders) > 1 {
-		return nil, errors.New("more than one placeholder found in question")
-	}
-	if placeholders[0][1] != "0" {
-		return nil, errors.New("placeholder {0} not found in question")
+	if len(blanks) > 1 {
+		return nil, errors.New("more than one blank found in question")
 	}
 
 	return &CreateFillInTheBlankExerciseCommand{
 		Question: question,
 		Answer:   answer,
+	}, nil
+}
+
+type CreateSentenceCorrectionExerciseCommand struct {
+	Sentence          string
+	CorrectedSentence string
+}
+
+func NewCreateSentenceCorrectionExerciseCommand(
+	sentence, correctedSentence string,
+) (*CreateSentenceCorrectionExerciseCommand, error) {
+	if sentence == correctedSentence {
+		return nil, errors.New("sentence and correctedSentence are the same")
+	}
+
+	return &CreateSentenceCorrectionExerciseCommand{
+		Sentence:          sentence,
+		CorrectedSentence: correctedSentence,
 	}, nil
 }

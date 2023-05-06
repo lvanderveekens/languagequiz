@@ -12,20 +12,23 @@ const FillInTheBlankExercise: React.FC<Props> = ({ question, answer, setAnswer }
     setAnswer(event.target.value);
   };
 
-  const parts = question.split("{0}");
+  const parts = question.split("______");
   const before = parts[0]; 
   const after = parts[1]; 
 
   return (
     <div className="border border-black">
-      {before}
-      <input
-        className="border border-black"
-        type="text"
-        value={answer ?? ''}
-        onChange={handleChange}
-      />
-      {after}
+      <div className='font-bold'>Fill in the blank</div>
+      <div>
+        {before}
+        <input
+          className="border border-black"
+          type="text"
+          value={answer ?? ""}
+          onChange={handleChange}
+        />
+        {after}
+      </div>
     </div>
   );
 };
