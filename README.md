@@ -1,3 +1,3 @@
-# testparrot
+# languagedrill
 
-A platform where you can make and take tests.
+A platform where you can make and take language drills.
