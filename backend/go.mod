@@ -1,4 +1,4 @@
-module github.com/lvanderveekens/testparrot
+module languagedrill
 
 go 1.20
 

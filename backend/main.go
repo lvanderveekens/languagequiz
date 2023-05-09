@@ -6,9 +6,10 @@ import (
 	"log"
 	"time"
 
+	"languagedrill/api"
+	"languagedrill/postgres"
+
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/lvanderveekens/testparrot/api"
-	"github.com/lvanderveekens/testparrot/postgres"
 
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
@@ -46,7 +47,9 @@ func main() {
 	exerciseStorage := postgres.NewExerciseStorage(dbpool)
 	exerciseHandler := api.NewExerciseHandler(exerciseStorage)
 
-	var handlers = api.NewHandlers(exerciseHandler)
+	drillHandler := api.NewDrillHandler()
+
+	var handlers = api.NewHandlers(exerciseHandler, drillHandler)
 
 	var server = api.NewServer(handlers)
 	log.Fatal(server.Start(8888))

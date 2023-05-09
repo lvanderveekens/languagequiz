@@ -21,6 +21,8 @@ func NewServer(handlers *Handlers) *Server {
 func (s *Server) Start(port int) error {
 	r := gin.Default()
 
+	r.POST("/v1/drills", createHandlerFunc(s.handlers.drill.CreateDrill))
+
 	r.GET("/v1/exercises", createHandlerFunc(s.handlers.exercise.GetExercises))
 	r.POST("/v1/exercises", createHandlerFunc(s.handlers.exercise.CreateExercise))
 	r.POST("/v1/exercises/answers", createHandlerFunc(s.handlers.exercise.SubmitAnswers))
@@ -45,10 +47,12 @@ func createHandlerFunc(f func(c *gin.Context) error) gin.HandlerFunc {
 
 type Handlers struct {
 	exercise *ExerciseHandler
+	drill    *DrillHandler
 }
 
-func NewHandlers(exerciseHandler *ExerciseHandler) *Handlers {
+func NewHandlers(exerciseHandler *ExerciseHandler, drillHandler *DrillHandler) *Handlers {
 	return &Handlers{
 		exercise: exerciseHandler,
+		drill:    drillHandler,
 	}
 }

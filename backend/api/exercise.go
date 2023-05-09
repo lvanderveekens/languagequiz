@@ -8,8 +8,9 @@ import (
 	"io"
 	"net/http"
 
+	"languagedrill/drill/exercise"
+
 	"github.com/gin-gonic/gin"
-	"github.com/lvanderveekens/testparrot/exercise"
 )
 
 type ExerciseHandler struct {
@@ -28,7 +29,7 @@ func (h *ExerciseHandler) CreateExercise(c *gin.Context) error {
 		return fmt.Errorf("failed to read request body: %w", err)
 	}
 
-	var req createExerciseRequest
+	var req createExerciseRequestBase
 	err = json.NewDecoder(bytes.NewReader(bodyBytes)).Decode(&req)
 	if err != nil {
 		return fmt.Errorf("failed to decode request body as map: %w", err)
@@ -45,17 +46,17 @@ func (h *ExerciseHandler) CreateExercise(c *gin.Context) error {
 			return NewError(http.StatusBadRequest, err.Error())
 		}
 
-		cmd, err := req.toCommand()
+		_, err := req.toCommand()
 		if err != nil {
 			return NewError(http.StatusBadRequest, err.Error())
 		}
 
-		exercise, err := h.exerciseStorage.CreateMultipleChoiceExercise(*cmd)
-		if err != nil {
-			return fmt.Errorf("failed to create exercise: %w", err)
-		}
+		// exercise, err := h.exerciseStorage.CreateMultipleChoiceExercise(*cmd)
+		// if err != nil {
+		// 	return fmt.Errorf("failed to create exercise: %w", err)
+		// }
 
-		dto = newMultipleChoiceExerciseDto(*exercise)
+		// dto = newMultipleChoiceExerciseDto(*exercise)
 	case exercise.TypeFillInTheBlank:
 		var req createFillInTheBlankExerciseRequest
 		if err := json.NewDecoder(bytes.NewReader(bodyBytes)).Decode(&req); err != nil {
@@ -216,12 +217,12 @@ func newSentenceCorrectionExerciseDto(e exercise.SentenceCorrectionExercise) sen
 	}
 }
 
-type createExerciseRequest struct {
+type createExerciseRequestBase struct {
 	Type string `json:"type"`
 }
 
 type createMultipleChoiceExerciseRequest struct {
-	createExerciseRequest
+	createExerciseRequestBase
 	Question string   `json:"question"`
 	Choices  []string `json:"choices"`
 	Answer   string   `json:"answer"`
@@ -249,7 +250,7 @@ func (r *createMultipleChoiceExerciseRequest) Validate() error {
 }
 
 type createFillInTheBlankExerciseRequest struct {
-	createExerciseRequest
+	createExerciseRequestBase
 	Question string `json:"question"`
 	Answer   string `json:"answer"`
 }
@@ -272,7 +273,7 @@ func (r *createFillInTheBlankExerciseRequest) Validate() error {
 }
 
 type createSentenceCorrectionExerciseRequest struct {
-	createExerciseRequest
+	createExerciseRequestBase
 	Sentence          string `json:"sentence"`
 	CorrectedSentence string `json:"correctedSentence"`
 }
