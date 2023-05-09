@@ -1,15 +1,15 @@
-package drill
+package quiz
 
-type CreateDrillCommand struct {
+type CreateQuizCommand struct {
 	Name     string
 	Sections []CreateSectionCommand
 }
 
-func NewCreateDrillCommand(
+func NewCreateQuizCommand(
 	name string,
 	sections []CreateSectionCommand,
-) CreateDrillCommand {
-	return CreateDrillCommand{
+) CreateQuizCommand {
+	return CreateQuizCommand{
 		Name:     name,
 		Sections: sections,
 	}

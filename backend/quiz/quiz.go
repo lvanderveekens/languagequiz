@@ -1,11 +1,11 @@
-package drill
+package quiz
 
 import (
-	"languagequiz/drill/exercise"
+	"languagequiz/quiz/exercise"
 	"time"
 )
 
-// Drill: Name
+// Quiz: Name
 //   Section A: Name
 // 		1. Exercise
 // 		2. Exercise
@@ -15,7 +15,7 @@ import (
 // 		2. Exercise
 // 		3. Exercise
 
-type Drill struct {
+type Quiz struct {
 	ID        string
 	CreatedAt time.Time
 	UpdatedAt time.Time

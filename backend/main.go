@@ -47,9 +47,9 @@ func main() {
 	exerciseStorage := postgres.NewExerciseStorage(dbpool)
 	exerciseHandler := api.NewExerciseHandler(exerciseStorage)
 
-	drillHandler := api.NewDrillHandler()
+	quizHandler := api.NewQuizHandler()
 
-	var handlers = api.NewHandlers(exerciseHandler, drillHandler)
+	var handlers = api.NewHandlers(exerciseHandler, quizHandler)
 
 	var server = api.NewServer(handlers)
 	log.Fatal(server.Start(8888))

@@ -4,23 +4,23 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"languagequiz/drill"
-	"languagequiz/drill/exercise"
+	"languagequiz/quiz"
+	"languagequiz/quiz/exercise"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
-type DrillHandler struct {
-	// drillStorage drill.Storage
+type QuizHandler struct {
+	// quizStorage quiz.Storage
 }
 
-func NewDrillHandler() *DrillHandler {
-	return &DrillHandler{}
+func NewQuizHandler() *QuizHandler {
+	return &QuizHandler{}
 }
 
-func (h *DrillHandler) CreateDrill(c *gin.Context) error {
-	var req createDrillRequest
+func (h *QuizHandler) CreateQuiz(c *gin.Context) error {
+	var req createQuizRequest
 	err := c.ShouldBindJSON(&req)
 	if err != nil {
 		return fmt.Errorf("failed to decode request body: %w", err)
@@ -41,12 +41,12 @@ func (h *DrillHandler) CreateDrill(c *gin.Context) error {
 	return nil
 }
 
-type createDrillRequest struct {
+type createQuizRequest struct {
 	Name     string                 `json:"name"`
 	Sections []createSectionRequest `json:"sections"`
 }
 
-func (r *createDrillRequest) validate() error {
+func (r *createQuizRequest) validate() error {
 	if r.Name == "" {
 		return errors.New("required field is missing: name")
 	}
@@ -61,8 +61,8 @@ func (r *createDrillRequest) validate() error {
 	return nil
 }
 
-func (r *createDrillRequest) toCommand() (*drill.CreateDrillCommand, error) {
-	createSectionCommands := make([]drill.CreateSectionCommand, 0)
+func (r *createQuizRequest) toCommand() (*quiz.CreateQuizCommand, error) {
+	createSectionCommands := make([]quiz.CreateSectionCommand, 0)
 	for _, createSectionRequest := range r.Sections {
 		createSectionCommand, err := createSectionRequest.toCommand()
 		if err != nil {
@@ -71,8 +71,8 @@ func (r *createDrillRequest) toCommand() (*drill.CreateDrillCommand, error) {
 		createSectionCommands = append(createSectionCommands, *createSectionCommand)
 	}
 
-	createDrillCommand := drill.NewCreateDrillCommand(r.Name, createSectionCommands)
-	return &createDrillCommand, nil
+	createQuizCommand := quiz.NewCreateQuizCommand(r.Name, createSectionCommands)
+	return &createQuizCommand, nil
 }
 
 type createSectionRequest struct {
@@ -112,7 +112,7 @@ func (r *createSectionRequest) validate() error {
 	return nil
 }
 
-func (r *createSectionRequest) toCommand() (*drill.CreateSectionCommand, error) {
+func (r *createSectionRequest) toCommand() (*quiz.CreateSectionCommand, error) {
 	createExerciseCommands := make([]any, 0)
 	for _, createExerciseRequestRaw := range r.Exercises {
 		var createExerciseRequestJson map[string]any
@@ -140,7 +140,7 @@ func (r *createSectionRequest) toCommand() (*drill.CreateSectionCommand, error) 
 
 	}
 
-	return &drill.CreateSectionCommand{
+	return &quiz.CreateSectionCommand{
 		Name:      r.Name,
 		Exercises: createExerciseCommands,
 	}, nil
