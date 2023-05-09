@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"languagedrill/drill"
-	"languagedrill/drill/exercise"
+	"languagequiz/drill"
+	"languagequiz/drill/exercise"
 	"net/http"
 
 	"github.com/gin-gonic/gin"

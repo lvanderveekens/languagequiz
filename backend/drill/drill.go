@@ -1,7 +1,7 @@
 package drill
 
 import (
-	"languagedrill/drill/exercise"
+	"languagequiz/drill/exercise"
 	"time"
 )
 

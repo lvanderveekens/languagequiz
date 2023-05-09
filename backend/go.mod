@@ -1,4 +1,4 @@
-module languagedrill
+module languagequiz
 
 go 1.20
 

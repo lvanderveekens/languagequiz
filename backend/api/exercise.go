@@ -8,7 +8,7 @@ import (
 	"io"
 	"net/http"
 
-	"languagedrill/drill/exercise"
+	"languagequiz/drill/exercise"
 
 	"github.com/gin-gonic/gin"
 )

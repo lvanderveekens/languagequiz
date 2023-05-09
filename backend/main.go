@@ -6,8 +6,8 @@ import (
 	"log"
 	"time"
 
-	"languagedrill/api"
-	"languagedrill/postgres"
+	"languagequiz/api"
+	"languagequiz/postgres"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
