@@ -47,7 +47,8 @@ func main() {
 	exerciseStorage := postgres.NewExerciseStorage(dbpool)
 	exerciseHandler := api.NewExerciseHandler(exerciseStorage)
 
-	quizHandler := api.NewQuizHandler()
+	quizStorage := postgres.NewQuizStorage(dbpool)
+	quizHandler := api.NewQuizHandler(quizStorage)
 
 	var handlers = api.NewHandlers(exerciseHandler, quizHandler)
 

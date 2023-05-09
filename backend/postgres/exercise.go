@@ -32,7 +32,7 @@ func (s *ExerciseStorage) CreateMultipleChoiceExercise(
 		INSERT INTO exercise (id, type, question, choices, answer) 
 		VALUES ($1, $2, $3, $4, $5) 
 		RETURNING *
-	`, id, exercise.TypeMultipleChoice, e.Question, e.Choices, e.Answer)
+	// `, id, exercise.TypeMultipleChoice, e.Question, e.Choices, e.Answer)
 
 	entity, err := mapToEntity(row)
 	if err != nil {

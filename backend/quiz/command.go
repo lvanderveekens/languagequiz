@@ -2,12 +2,12 @@ package quiz
 
 type CreateQuizCommand struct {
 	Name     string
-	Sections []CreateSectionCommand
+	Sections []CreateQuizSectionCommand
 }
 
 func NewCreateQuizCommand(
 	name string,
-	sections []CreateSectionCommand,
+	sections []CreateQuizSectionCommand,
 ) CreateQuizCommand {
 	return CreateQuizCommand{
 		Name:     name,
@@ -15,7 +15,7 @@ func NewCreateQuizCommand(
 	}
 }
 
-type CreateSectionCommand struct {
+type CreateQuizSectionCommand struct {
 	Name      string
 	Exercises []any
 }
@@ -23,8 +23,8 @@ type CreateSectionCommand struct {
 func NewCreateSectionCommand(
 	name string,
 	exercises []any,
-) CreateSectionCommand {
-	return CreateSectionCommand{
+) CreateQuizSectionCommand {
+	return CreateQuizSectionCommand{
 		Name:      name,
 		Exercises: exercises,
 	}

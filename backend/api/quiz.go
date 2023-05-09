@@ -12,11 +12,11 @@ import (
 )
 
 type QuizHandler struct {
-	// quizStorage quiz.Storage
+	quizStorage quiz.Storage
 }
 
-func NewQuizHandler() *QuizHandler {
-	return &QuizHandler{}
+func NewQuizHandler(quizStorage quiz.Storage) *QuizHandler {
+	return &QuizHandler{quizStorage: quizStorage}
 }
 
 func (h *QuizHandler) CreateQuiz(c *gin.Context) error {
@@ -35,23 +35,26 @@ func (h *QuizHandler) CreateQuiz(c *gin.Context) error {
 		return err
 	}
 
-	fmt.Printf("Command: %+v\n", *cmd)
+	quiz, err := h.quizStorage.CreateQuiz(*cmd)
+	if err != nil {
+		return fmt.Errorf("failed to create quiz: %w", err)
+	}
 
-	c.JSON(http.StatusCreated, nil)
+	c.JSON(http.StatusCreated, *quiz)
 	return nil
 }
 
 type createQuizRequest struct {
-	Name     string                 `json:"name"`
-	Sections []createSectionRequest `json:"sections"`
+	Name     string                     `json:"name"`
+	Sections []createQuizSectionRequest `json:"sections"`
 }
 
 func (r *createQuizRequest) validate() error {
 	if r.Name == "" {
-		return errors.New("required field is missing: name")
+		return errors.New("field 'name' is missing")
 	}
 	if r.Sections == nil {
-		return errors.New("required field is missing: sections")
+		return errors.New("field 'sections' is missing")
 	}
 	for _, createSectionRequest := range r.Sections {
 		if err := createSectionRequest.validate(); err != nil {
@@ -62,7 +65,7 @@ func (r *createQuizRequest) validate() error {
 }
 
 func (r *createQuizRequest) toCommand() (*quiz.CreateQuizCommand, error) {
-	createSectionCommands := make([]quiz.CreateSectionCommand, 0)
+	createSectionCommands := make([]quiz.CreateQuizSectionCommand, 0)
 	for _, createSectionRequest := range r.Sections {
 		createSectionCommand, err := createSectionRequest.toCommand()
 		if err != nil {
@@ -75,17 +78,17 @@ func (r *createQuizRequest) toCommand() (*quiz.CreateQuizCommand, error) {
 	return &createQuizCommand, nil
 }
 
-type createSectionRequest struct {
+type createQuizSectionRequest struct {
 	Name      string            `json:"name"`
 	Exercises []json.RawMessage `json:"exercises"`
 }
 
-func (r *createSectionRequest) validate() error {
+func (r *createQuizSectionRequest) validate() error {
 	if r.Name == "" {
-		return errors.New("required field is missing: name")
+		return errors.New("field 'name' is missing")
 	}
 	if r.Exercises == nil {
-		return errors.New("required field is missing: exercises")
+		return errors.New("field 'exercises' is missing")
 	}
 	for _, createExerciseRequestRaw := range r.Exercises {
 		var createExerciseRequestJson map[string]any
@@ -103,7 +106,24 @@ func (r *createSectionRequest) validate() error {
 			if err := createExerciseRequest.Validate(); err != nil {
 				return fmt.Errorf("exercise validation error: %w", err)
 			}
-			// TODO: more exercise types
+		case exercise.TypeFillInTheBlank:
+			var createExerciseRequest createFillInTheBlankExerciseRequest
+			if err := json.Unmarshal(createExerciseRequestRaw, &createExerciseRequest); err != nil {
+				return fmt.Errorf("failed to decode exercise: %w", err)
+			}
+
+			if err := createExerciseRequest.Validate(); err != nil {
+				return fmt.Errorf("exercise validation error: %w", err)
+			}
+		case exercise.TypeSentenceCorrection:
+			var createExerciseRequest createSentenceCorrectionExerciseRequest
+			if err := json.Unmarshal(createExerciseRequestRaw, &createExerciseRequest); err != nil {
+				return fmt.Errorf("failed to decode exercise: %w", err)
+			}
+
+			if err := createExerciseRequest.Validate(); err != nil {
+				return fmt.Errorf("exercise validation error: %w", err)
+			}
 		default:
 			return fmt.Errorf("unsupported exercise type: %v", createExerciseRequestJson["type"])
 		}
@@ -112,7 +132,7 @@ func (r *createSectionRequest) validate() error {
 	return nil
 }
 
-func (r *createSectionRequest) toCommand() (*quiz.CreateSectionCommand, error) {
+func (r *createQuizSectionRequest) toCommand() (*quiz.CreateQuizSectionCommand, error) {
 	createExerciseCommands := make([]any, 0)
 	for _, createExerciseRequestRaw := range r.Exercises {
 		var createExerciseRequestJson map[string]any
@@ -133,14 +153,37 @@ func (r *createSectionRequest) toCommand() (*quiz.CreateSectionCommand, error) {
 			}
 
 			createExerciseCommands = append(createExerciseCommands, *createExerciseCommand)
-			// TODO: more exercise types
+		case exercise.TypeFillInTheBlank:
+			var createExerciseRequest createFillInTheBlankExerciseRequest
+			if err := json.Unmarshal(createExerciseRequestRaw, &createExerciseRequest); err != nil {
+				return nil, fmt.Errorf("failed to decode exercise: %w", err)
+			}
+
+			createExerciseCommand, err := createExerciseRequest.toCommand()
+			if err != nil {
+				return nil, NewError(http.StatusBadRequest, err.Error())
+			}
+
+			createExerciseCommands = append(createExerciseCommands, *createExerciseCommand)
+		case exercise.TypeSentenceCorrection:
+			var createExerciseRequest createSentenceCorrectionExerciseRequest
+			if err := json.Unmarshal(createExerciseRequestRaw, &createExerciseRequest); err != nil {
+				return nil, fmt.Errorf("failed to decode exercise: %w", err)
+			}
+
+			createExerciseCommand, err := createExerciseRequest.toCommand()
+			if err != nil {
+				return nil, NewError(http.StatusBadRequest, err.Error())
+			}
+
+			createExerciseCommands = append(createExerciseCommands, *createExerciseCommand)
 		default:
 			return nil, NewError(http.StatusBadRequest, fmt.Sprintf("unsupported exercise type: %v", createExerciseRequestJson["type"]))
 		}
 
 	}
 
-	return &quiz.CreateSectionCommand{
+	return &quiz.CreateQuizSectionCommand{
 		Name:      r.Name,
 		Exercises: createExerciseCommands,
 	}, nil
