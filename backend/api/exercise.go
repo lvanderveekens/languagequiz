@@ -1,220 +1,216 @@
 package api
 
 import (
-	"bytes"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
-	"net/http"
 
 	"languagequiz/quiz/exercise"
-
-	"github.com/gin-gonic/gin"
 )
 
-type ExerciseHandler struct {
-	exerciseStorage exercise.Storage
-}
+// func (h *ExerciseHandler) CreateExercise(c *gin.Context) error {
+// 	bodyBytes, err := io.ReadAll(c.Request.Body)
+// 	if err != nil {
+// 		return fmt.Errorf("failed to read request body: %w", err)
+// 	}
 
-func NewExerciseHandler(exerciseStorage exercise.Storage) *ExerciseHandler {
-	return &ExerciseHandler{
-		exerciseStorage: exerciseStorage,
-	}
-}
+// 	var req createExerciseRequestBase
+// 	err = json.NewDecoder(bytes.NewReader(bodyBytes)).Decode(&req)
+// 	if err != nil {
+// 		return fmt.Errorf("failed to decode request body as map: %w", err)
+// 	}
 
-func (h *ExerciseHandler) CreateExercise(c *gin.Context) error {
-	bodyBytes, err := io.ReadAll(c.Request.Body)
-	if err != nil {
-		return fmt.Errorf("failed to read request body: %w", err)
-	}
+// 	var dto any
+// 	switch req.Type {
+// 	case exercise.TypeMultipleChoice:
+// 		var req createMultipleChoiceExerciseRequest
+// 		if err := json.NewDecoder(bytes.NewReader(bodyBytes)).Decode(&req); err != nil {
+// 			return NewError(http.StatusBadRequest, fmt.Sprintf("failed to decode request body as struct: %s", err.Error()))
+// 		}
+// 		if err := req.Validate(); err != nil {
+// 			return NewError(http.StatusBadRequest, err.Error())
+// 		}
 
-	var req createExerciseRequestBase
-	err = json.NewDecoder(bytes.NewReader(bodyBytes)).Decode(&req)
-	if err != nil {
-		return fmt.Errorf("failed to decode request body as map: %w", err)
-	}
+// 		_, err := req.toCommand()
+// 		if err != nil {
+// 			return NewError(http.StatusBadRequest, err.Error())
+// 		}
 
-	var dto any
-	switch req.Type {
-	case exercise.TypeMultipleChoice:
-		var req createMultipleChoiceExerciseRequest
-		if err := json.NewDecoder(bytes.NewReader(bodyBytes)).Decode(&req); err != nil {
-			return NewError(http.StatusBadRequest, fmt.Sprintf("failed to decode request body as struct: %s", err.Error()))
-		}
-		if err := req.Validate(); err != nil {
-			return NewError(http.StatusBadRequest, err.Error())
-		}
+// 		// exercise, err := h.exerciseStorage.CreateMultipleChoiceExercise(*cmd)
+// 		// if err != nil {
+// 		// 	return fmt.Errorf("failed to create exercise: %w", err)
+// 		// }
 
-		_, err := req.toCommand()
-		if err != nil {
-			return NewError(http.StatusBadRequest, err.Error())
-		}
+// 		// dto = newMultipleChoiceExerciseDto(*exercise)
+// 	case exercise.TypeFillInTheBlank:
+// 		var req createFillInTheBlankExerciseRequest
+// 		if err := json.NewDecoder(bytes.NewReader(bodyBytes)).Decode(&req); err != nil {
+// 			return NewError(http.StatusBadRequest, fmt.Sprintf("failed to decode request body as struct: %s", err.Error()))
+// 		}
+// 		if err := req.Validate(); err != nil {
+// 			return NewError(http.StatusBadRequest, err.Error())
+// 		}
 
-		// exercise, err := h.exerciseStorage.CreateMultipleChoiceExercise(*cmd)
-		// if err != nil {
-		// 	return fmt.Errorf("failed to create exercise: %w", err)
-		// }
+// 		cmd, err := req.toCommand()
+// 		if err != nil {
+// 			return NewError(http.StatusBadRequest, err.Error())
+// 		}
 
-		// dto = newMultipleChoiceExerciseDto(*exercise)
-	case exercise.TypeFillInTheBlank:
-		var req createFillInTheBlankExerciseRequest
-		if err := json.NewDecoder(bytes.NewReader(bodyBytes)).Decode(&req); err != nil {
-			return NewError(http.StatusBadRequest, fmt.Sprintf("failed to decode request body as struct: %s", err.Error()))
-		}
-		if err := req.Validate(); err != nil {
-			return NewError(http.StatusBadRequest, err.Error())
-		}
+// 		exercise, err := h.exerciseStorage.CreateFillInTheBlankExercise(*cmd)
+// 		if err != nil {
+// 			return fmt.Errorf("failed to create exercise: %w", err)
+// 		}
 
-		cmd, err := req.toCommand()
-		if err != nil {
-			return NewError(http.StatusBadRequest, err.Error())
-		}
+// 		dto = newFillInTheBlankExerciseDto(*exercise)
+// 	case exercise.TypeSentenceCorrection:
+// 		var req createSentenceCorrectionExerciseRequest
+// 		if err := json.NewDecoder(bytes.NewReader(bodyBytes)).Decode(&req); err != nil {
+// 			return NewError(http.StatusBadRequest, fmt.Sprintf("failed to decode request body as struct: %s", err.Error()))
+// 		}
+// 		if err := req.Validate(); err != nil {
+// 			return NewError(http.StatusBadRequest, err.Error())
+// 		}
 
-		exercise, err := h.exerciseStorage.CreateFillInTheBlankExercise(*cmd)
-		if err != nil {
-			return fmt.Errorf("failed to create exercise: %w", err)
-		}
+// 		cmd, err := req.toCommand()
+// 		if err != nil {
+// 			return NewError(http.StatusBadRequest, err.Error())
+// 		}
 
-		dto = newFillInTheBlankExerciseDto(*exercise)
-	case exercise.TypeSentenceCorrection:
-		var req createSentenceCorrectionExerciseRequest
-		if err := json.NewDecoder(bytes.NewReader(bodyBytes)).Decode(&req); err != nil {
-			return NewError(http.StatusBadRequest, fmt.Sprintf("failed to decode request body as struct: %s", err.Error()))
-		}
-		if err := req.Validate(); err != nil {
-			return NewError(http.StatusBadRequest, err.Error())
-		}
+// 		exercise, err := h.exerciseStorage.CreateSentenceCorrectionExercise(*cmd)
+// 		if err != nil {
+// 			return fmt.Errorf("failed to create exercise: %w", err)
+// 		}
 
-		cmd, err := req.toCommand()
-		if err != nil {
-			return NewError(http.StatusBadRequest, err.Error())
-		}
+// 		dto = newSentenceCorrectionExerciseDto(*exercise)
+// 	default:
+// 		return NewError(http.StatusBadRequest, fmt.Sprintf("Unsupported exercise type: %v", req.Type))
+// 	}
 
-		exercise, err := h.exerciseStorage.CreateSentenceCorrectionExercise(*cmd)
-		if err != nil {
-			return fmt.Errorf("failed to create exercise: %w", err)
-		}
+// 	c.JSON(http.StatusCreated, dto)
+// 	return nil
+// }
 
-		dto = newSentenceCorrectionExerciseDto(*exercise)
-	default:
-		return NewError(http.StatusBadRequest, fmt.Sprintf("Unsupported exercise type: %v", req.Type))
-	}
+// func (h *ExerciseHandler) GetExercises(c *gin.Context) error {
+// 	exercises, err := h.exerciseStorage.Find()
+// 	if err != nil {
+// 		return fmt.Errorf("failed to find exercises: %w", err)
+// 	}
 
-	c.JSON(http.StatusCreated, dto)
-	return nil
-}
+// 	dtos := make([]any, 0)
+// 	for _, exercise := range exercises {
+// 		dto, err := mapExerciseToDto(exercise)
+// 		if err != nil {
+// 			return fmt.Errorf("failed to map exercise to dto: %w", err)
+// 		}
+// 		dtos = append(dtos, dto)
+// 	}
 
-func (h *ExerciseHandler) GetExercises(c *gin.Context) error {
-	exercises, err := h.exerciseStorage.Find()
-	if err != nil {
-		return fmt.Errorf("failed to find exercises: %w", err)
-	}
+// 	c.JSON(http.StatusOK, dtos)
+// 	return nil
+// }
 
-	dtos := make([]any, 0)
-	for _, exercise := range exercises {
-		dto, err := mapExerciseToDto(exercise)
-		if err != nil {
-			return fmt.Errorf("failed to map exercise to dto: %w", err)
-		}
-		dtos = append(dtos, dto)
-	}
+// func (h *ExerciseHandler) SubmitAnswers(c *gin.Context) error {
+// 	// TODO: validate request
+// 	var req submitAnswersRequest
+// 	err := json.NewDecoder(c.Request.Body).Decode(&req)
+// 	if err != nil {
+// 		return fmt.Errorf("failed to decode request body: %w", err)
+// 	}
 
-	c.JSON(http.StatusOK, dtos)
-	return nil
-}
+// 	results := make([]exerciseResult, 0)
+// 	for _, submission := range req.Submissions {
+// 		e, err := h.exerciseStorage.FindByID(submission.ExerciseID)
+// 		if err != nil {
+// 			return fmt.Errorf("failed to find exercise by id: %w", err)
+// 		}
 
-func (h *ExerciseHandler) SubmitAnswers(c *gin.Context) error {
-	// TODO: validate request
-	var req submitAnswersRequest
-	err := json.NewDecoder(c.Request.Body).Decode(&req)
-	if err != nil {
-		return fmt.Errorf("failed to decode request body: %w", err)
-	}
+// 		correct := e.CheckAnswer(submission.Answer)
+// 		result := newExerciseResult(submission.ExerciseID, e.GetType(), correct, e.GetAnswer())
+// 		results = append(results, result)
+// 	}
 
-	results := make([]exerciseResult, 0)
-	for _, submission := range req.Submissions {
-		e, err := h.exerciseStorage.FindByID(submission.ExerciseID)
-		if err != nil {
-			return fmt.Errorf("failed to find exercise by id: %w", err)
-		}
+// 	c.JSON(http.StatusOK, newSubmitAnswersResponse(results))
+// 	return nil
+// }
 
-		correct := e.CheckAnswer(submission.Answer)
-		result := newExerciseResult(submission.ExerciseID, e.GetType(), correct, e.GetAnswer())
-		results = append(results, result)
-	}
-
-	c.JSON(http.StatusOK, newSubmitAnswersResponse(results))
-	return nil
-}
-
-func mapExerciseToDto(e exercise.Exercise) (any, error) {
+func mapExerciseToDTO(e exercise.Exercise) (any, error) {
 	switch e := e.(type) {
 	case *exercise.MultipleChoiceExercise:
-		return newMultipleChoiceExerciseDto(*e), nil
+		return mapMultipleChoiceExerciseToDTO(*e), nil
 	case *exercise.FillInTheBlankExercise:
-		return newFillInTheBlankExerciseDto(*e), nil
+		return mapFillInTheBlankExerciseToDTO(*e), nil
 	case *exercise.SentenceCorrectionExercise:
-		return newSentenceCorrectionExerciseDto(*e), nil
+		return mapSentenceCorrectionExerciseToDTO(*e), nil
 	default:
 		return nil, fmt.Errorf("unknown exercise type: %T", e)
 	}
 }
 
-type exerciseDtoBase struct {
+type exerciseDTOBase struct {
 	ID   string `json:"id"`
 	Type string `json:"type"`
 }
 
-func newExerciseDtoBase(id string, exerciseType string) exerciseDtoBase {
-	return exerciseDtoBase{
+func newExerciseDTOBase(id string, exerciseType string) exerciseDTOBase {
+	return exerciseDTOBase{
 		ID:   id,
 		Type: exerciseType,
 	}
 }
 
-type multipleChoiceExerciseDto struct {
-	exerciseDtoBase
+type multipleChoiceExerciseDTO struct {
+	exerciseDTOBase
 	Question string   `json:"question"`
 	Choices  []string `json:"choices"`
 	Answer   string   `json:"answer"`
 }
 
-func newMultipleChoiceExerciseDto(e exercise.MultipleChoiceExercise) multipleChoiceExerciseDto {
-	return multipleChoiceExerciseDto{
-		exerciseDtoBase: newExerciseDtoBase(e.ID, exercise.TypeMultipleChoice),
-		Question:        e.Question,
-		Choices:         e.Choices,
-		Answer:          e.Answer,
+func newMultipleChoiceExerciseDTO(id, question string, choices []string, answer string) multipleChoiceExerciseDTO {
+	return multipleChoiceExerciseDTO{
+		exerciseDTOBase: newExerciseDTOBase(id, exercise.TypeMultipleChoice),
+		Question:        question,
+		Choices:         choices,
+		Answer:          answer,
 	}
 }
 
-type fillInTheBlankExerciseDto struct {
-	exerciseDtoBase
+func mapMultipleChoiceExerciseToDTO(e exercise.MultipleChoiceExercise) multipleChoiceExerciseDTO {
+	return newMultipleChoiceExerciseDTO(e.ID, e.Question, e.Choices, e.Answer)
+}
+
+type fillInTheBlankExerciseDTO struct {
+	exerciseDTOBase
 	Question string `json:"question"`
 	Answer   string `json:"answer"`
 }
 
-func newFillInTheBlankExerciseDto(e exercise.FillInTheBlankExercise) fillInTheBlankExerciseDto {
-	return fillInTheBlankExerciseDto{
-		exerciseDtoBase: newExerciseDtoBase(e.ID, exercise.TypeFillInTheBlank),
-		Question:        e.Question,
-		Answer:          e.Answer,
+func newFillInTheBlankExerciseDTO(id, question, answer string) fillInTheBlankExerciseDTO {
+	return fillInTheBlankExerciseDTO{
+		exerciseDTOBase: newExerciseDTOBase(id, exercise.TypeFillInTheBlank),
+		Question:        question,
+		Answer:          answer,
 	}
 }
 
-type sentenceCorrectionExerciseDto struct {
-	exerciseDtoBase
+func mapFillInTheBlankExerciseToDTO(e exercise.FillInTheBlankExercise) fillInTheBlankExerciseDTO {
+	return newFillInTheBlankExerciseDTO(e.ID, e.Question, e.Answer)
+}
+
+type sentenceCorrectionExerciseDTO struct {
+	exerciseDTOBase
 	Sentence          string `json:"sentence"`
 	CorrectedSentence string `json:"correctedSentence"`
 }
 
-func newSentenceCorrectionExerciseDto(e exercise.SentenceCorrectionExercise) sentenceCorrectionExerciseDto {
-	return sentenceCorrectionExerciseDto{
-		exerciseDtoBase:   newExerciseDtoBase(e.ID, exercise.TypeSentenceCorrection),
-		Sentence:          e.Sentence,
-		CorrectedSentence: e.CorrectedSentence,
+func newSentenceCorrectionExerciseDTO(id, sentence, correctedSentence string) sentenceCorrectionExerciseDTO {
+	return sentenceCorrectionExerciseDTO{
+		exerciseDTOBase:   newExerciseDTOBase(id, exercise.TypeSentenceCorrection),
+		Sentence:          sentence,
+		CorrectedSentence: correctedSentence,
 	}
+}
+
+func mapSentenceCorrectionExerciseToDTO(e exercise.SentenceCorrectionExercise) sentenceCorrectionExerciseDTO {
+	return newSentenceCorrectionExerciseDTO(e.ID, e.Sentence, e.CorrectedSentence)
 }
 
 type createExerciseRequestBase struct {
@@ -295,37 +291,37 @@ func (r *createSentenceCorrectionExerciseRequest) Validate() error {
 	return nil
 }
 
-type submitAnswersRequest struct {
-	Submissions []exerciseSubmission `json:"submissions"`
-}
+// type submitAnswersRequest struct {
+// 	Submissions []exerciseSubmission `json:"submissions"`
+// }
 
-type exerciseSubmission struct {
-	ExerciseID string `json:"exerciseId"`
-	Answer     any    `json:"answer"`
-}
+// type exerciseSubmission struct {
+// 	ExerciseID string `json:"exerciseId"`
+// 	Answer     any    `json:"answer"`
+// }
 
-type submitAnswersResponse struct {
-	Results []exerciseResult `json:"results"`
-}
+// type submitAnswersResponse struct {
+// 	Results []exerciseResult `json:"results"`
+// }
 
-func newSubmitAnswersResponse(results []exerciseResult) submitAnswersResponse {
-	return submitAnswersResponse{
-		Results: results,
-	}
-}
+// func newSubmitAnswersResponse(results []exerciseResult) submitAnswersResponse {
+// 	return submitAnswersResponse{
+// 		Results: results,
+// 	}
+// }
 
-type exerciseResult struct {
-	ExerciseID   string `json:"exerciseId"`
-	ExerciseType string `json:"exerciseType"`
-	Correct      bool   `json:"correct"`
-	Answer       any    `json:"answer"`
-}
+// type exerciseResult struct {
+// 	ExerciseID   string `json:"exerciseId"`
+// 	ExerciseType string `json:"exerciseType"`
+// 	Correct      bool   `json:"correct"`
+// 	Answer       any    `json:"answer"`
+// }
 
-func newExerciseResult(exerciseID string, exerciseType string, correct bool, answer any) exerciseResult {
-	return exerciseResult{
-		ExerciseID:   exerciseID,
-		ExerciseType: exerciseType,
-		Correct:      correct,
-		Answer:       answer,
-	}
-}
+// func newExerciseResult(exerciseID string, exerciseType string, correct bool, answer any) exerciseResult {
+// 	return exerciseResult{
+// 		ExerciseID:   exerciseID,
+// 		ExerciseType: exerciseType,
+// 		Correct:      correct,
+// 		Answer:       answer,
+// 	}
+// }

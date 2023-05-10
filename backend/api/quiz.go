@@ -40,8 +40,12 @@ func (h *QuizHandler) CreateQuiz(c *gin.Context) error {
 		return fmt.Errorf("failed to create quiz: %w", err)
 	}
 
-	// TODO: map to DTO
-	c.JSON(http.StatusCreated, *quiz)
+	dto, err := mapToQuizDTO(*quiz)
+	if err != nil {
+		return fmt.Errorf("failed to map quiz to dto: %w", err)
+	}
+
+	c.JSON(http.StatusCreated, *dto)
 	return nil
 }
 
@@ -181,11 +185,67 @@ func (r *createQuizSectionRequest) toCommand() (*quiz.CreateQuizSectionCommand, 
 		default:
 			return nil, NewError(http.StatusBadRequest, fmt.Sprintf("unsupported exercise type: %v", createExerciseRequestJson["type"]))
 		}
-
 	}
 
 	return &quiz.CreateQuizSectionCommand{
 		Name:      r.Name,
 		Exercises: createExerciseCommands,
 	}, nil
+}
+
+func mapToQuizDTO(q quiz.Quiz) (*QuizDTO, error) {
+	quizSectionDTOs, err := mapToQuizSectionDTOs(q.Sections)
+	if err != nil {
+		return nil, fmt.Errorf("failed to map quiz sections to dtos: %w", err)
+	}
+	quizDTO := newQuizDTO(q.Name, quizSectionDTOs)
+	return &quizDTO, nil
+}
+
+func mapToQuizSectionDTOs(quizSections []quiz.Section) ([]QuizSectionDTO, error) {
+	dtos := make([]QuizSectionDTO, 0)
+	for _, quizSection := range quizSections {
+		exerciseDTOs, err := mapToExerciseDTOs(quizSection.Exercises)
+		if err != nil {
+			return nil, fmt.Errorf("failed to map exercises to dtos: %w", err)
+		}
+		dtos = append(dtos, newQuizSectionDTO(quizSection.Name, exerciseDTOs))
+	}
+	return dtos, nil
+}
+
+func mapToExerciseDTOs(exercises []exercise.Exercise) ([]any, error) {
+	dtos := make([]any, 0)
+	for _, e := range exercises {
+		dto, err := mapExerciseToDTO(e)
+		if err != nil {
+			return nil, fmt.Errorf("failed to map exercise to dto: %w", err)
+		}
+		dtos = append(dtos, dto)
+	}
+	return dtos, nil
+}
+
+type QuizDTO struct {
+	Name     string           `json:"name"`
+	Sections []QuizSectionDTO `json:"sections"`
+}
+
+func newQuizDTO(name string, sections []QuizSectionDTO) QuizDTO {
+	return QuizDTO{
+		Name:     name,
+		Sections: sections,
+	}
+}
+
+type QuizSectionDTO struct {
+	Name      string `json:"name"`
+	Exercises []any  `json:"exercises"`
+}
+
+func newQuizSectionDTO(name string, exercises []any) QuizSectionDTO {
+	return QuizSectionDTO{
+		Name:      name,
+		Exercises: exercises,
+	}
 }
