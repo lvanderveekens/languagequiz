@@ -40,6 +40,7 @@ func (h *QuizHandler) CreateQuiz(c *gin.Context) error {
 		return fmt.Errorf("failed to create quiz: %w", err)
 	}
 
+	// TODO: map to DTO
 	c.JSON(http.StatusCreated, *quiz)
 	return nil
 }

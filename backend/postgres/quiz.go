@@ -43,7 +43,7 @@ func (s *QuizStorage) CreateQuiz(cmd quiz.CreateQuizCommand) (*quiz.Quiz, error)
 	}
 
 	quizSectionEntities := make([]QuizSectionEntity, 0)
-	exerciseEntities := make([]ExerciseEntity2, 0)
+	exerciseEntitiesBySectionID := make(map[string][]ExerciseEntity)
 	for _, createSectionCommand := range cmd.Sections {
 		id, err := uuid.NewRandom()
 		if err != nil {
@@ -61,16 +61,23 @@ func (s *QuizStorage) CreateQuiz(cmd quiz.CreateQuizCommand) (*quiz.Quiz, error)
 		quizSectionEntities = append(quizSectionEntities, *quizSectionEntity)
 
 		for _, createExerciseCommand := range createSectionCommand.Exercises {
+			var exerciseEntity *ExerciseEntity
+			var err error
 			switch createExerciseCommand := createExerciseCommand.(type) {
 			case exercise.CreateMultipleChoiceExerciseCommand:
-				insertMultipleChoiceExercise(tx, createExerciseCommand, quizSectionEntity.ID)
+				exerciseEntity, err = insertMultipleChoiceExercise(tx, createExerciseCommand, quizSectionEntity.ID)
 			case exercise.CreateFillInTheBlankExerciseCommand:
-				insertFillInTheBlankExercise(tx, createExerciseCommand, quizSectionEntity.ID)
+				exerciseEntity, err = insertFillInTheBlankExercise(tx, createExerciseCommand, quizSectionEntity.ID)
 			case exercise.CreateSentenceCorrectionExerciseCommand:
-				insertSentenceCorrectionExercise(tx, createExerciseCommand, quizSectionEntity.ID)
+				exerciseEntity, err = insertSentenceCorrectionExercise(tx, createExerciseCommand, quizSectionEntity.ID)
 			default:
 				return nil, fmt.Errorf("unknown exercise type: %T", createExerciseCommand)
 			}
+			if err != nil {
+				return nil, fmt.Errorf("failed to insert exercise: %w", err)
+			}
+			exerciseEntitiesBySectionID[quizSectionEntity.ID.String()] =
+				append(exerciseEntitiesBySectionID[quizSectionEntity.ID.String()], *exerciseEntity)
 		}
 	}
 
@@ -79,14 +86,14 @@ func (s *QuizStorage) CreateQuiz(cmd quiz.CreateQuizCommand) (*quiz.Quiz, error)
 		return nil, fmt.Errorf("failed to commit transaction: %w", err)
 	}
 
-	return mapToQuiz(*quizEntity, quizSectionEntities, exerciseEntities)
+	return mapToQuiz(*quizEntity, quizSectionEntities, exerciseEntitiesBySectionID)
 }
 
 func insertMultipleChoiceExercise(
 	tx pgx.Tx,
 	cmd exercise.CreateMultipleChoiceExerciseCommand,
 	quizSectionId uuid.UUID,
-) (*ExerciseEntity2, error) {
+) (*ExerciseEntity, error) {
 	id, err := uuid.NewRandom()
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate new UUID: %w", err)
@@ -98,14 +105,14 @@ func insertMultipleChoiceExercise(
 		RETURNING *
 	`, id, quizSectionId, exercise.TypeMultipleChoice, cmd.Question, cmd.Choices, cmd.Answer)
 
-	return mapToExerciseEntity2(row)
+	return mapToExerciseEntity(row)
 }
 
 func insertFillInTheBlankExercise(
 	tx pgx.Tx,
 	cmd exercise.CreateFillInTheBlankExerciseCommand,
 	quizSectionId uuid.UUID,
-) (*ExerciseEntity2, error) {
+) (*ExerciseEntity, error) {
 	id, err := uuid.NewRandom()
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate new UUID: %w", err)
@@ -117,14 +124,14 @@ func insertFillInTheBlankExercise(
 		RETURNING *
 	`, id, quizSectionId, exercise.TypeFillInTheBlank, cmd.Question, cmd.Answer)
 
-	return mapToExerciseEntity2(row)
+	return mapToExerciseEntity(row)
 }
 
 func insertSentenceCorrectionExercise(
 	tx pgx.Tx,
 	cmd exercise.CreateSentenceCorrectionExerciseCommand,
 	quizSectionId uuid.UUID,
-) (*ExerciseEntity2, error) {
+) (*ExerciseEntity, error) {
 	id, err := uuid.NewRandom()
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate new UUID: %w", err)
@@ -136,7 +143,7 @@ func insertSentenceCorrectionExercise(
 		RETURNING *
 	`, id, quizSectionId, exercise.TypeSentenceCorrection, cmd.Sentence, cmd.CorrectedSentence)
 
-	return mapToExerciseEntity2(row)
+	return mapToExerciseEntity(row)
 }
 
 func mapToQuizEntity(row pgx.Row) (*QuizEntity, error) {
@@ -162,8 +169,8 @@ func mapToQuizSectionEntity(row pgx.Row) (*QuizSectionEntity, error) {
 	return &entity, err
 }
 
-func mapToExerciseEntity2(row pgx.Row) (*ExerciseEntity2, error) {
-	var entity ExerciseEntity2
+func mapToExerciseEntity(row pgx.Row) (*ExerciseEntity, error) {
+	var entity ExerciseEntity
 	err := row.Scan(
 		&entity.ID,
 		&entity.QuizSectionID,
@@ -182,11 +189,31 @@ func mapToExerciseEntity2(row pgx.Row) (*ExerciseEntity2, error) {
 func mapToQuiz(
 	quizEntity QuizEntity,
 	quizSectionEntities []QuizSectionEntity,
-	exerciseEntities []ExerciseEntity2,
+	exerciseEntitiesBySectionID map[string][]ExerciseEntity,
 ) (*quiz.Quiz, error) {
-	// return quiz.New()
-	// TODO:
-	return nil, nil
+
+	sections := make([]quiz.Section, 0)
+	for _, quizSectionEntity := range quizSectionEntities {
+		exerciseEntities := exerciseEntitiesBySectionID[quizSectionEntity.ID.String()]
+
+		exercises, err := mapToExercises(exerciseEntities)
+		if err != nil {
+			return nil, err
+		}
+
+		section := quiz.NewSection(quizSectionEntity.Name, exercises)
+		sections = append(sections, section)
+	}
+
+	quiz := quiz.New(
+		quizEntity.ID.String(),
+		quizEntity.CreatedAt,
+		quizEntity.UpdatedAt,
+		quizEntity.Name,
+		sections,
+	)
+
+	return &quiz, nil
 }
 
 type QuizEntity struct {
@@ -204,7 +231,7 @@ type QuizSectionEntity struct {
 	Name      string
 }
 
-type ExerciseEntity2 struct {
+type ExerciseEntity struct {
 	ID            uuid.UUID
 	QuizSectionID uuid.UUID
 	CreatedAt     time.Time
@@ -217,4 +244,63 @@ type ExerciseEntity2 struct {
 
 	Sentence          *string
 	CorrectedSentence *string
+}
+
+func mapToExercises(entities []ExerciseEntity) ([]exercise.Exercise, error) {
+	exercises := make([]exercise.Exercise, 0)
+	for _, entity := range entities {
+		exercise, err := mapToExercise(entity)
+		if err != nil {
+			return nil, err
+		}
+		exercises = append(exercises, exercise)
+	}
+	return exercises, nil
+}
+
+func mapToExercise(entity ExerciseEntity) (exercise.Exercise, error) {
+	switch entity.Type {
+	case exercise.TypeMultipleChoice:
+		return mapToMultipleChoiceExercise(entity), nil
+	case exercise.TypeFillInTheBlank:
+		return mapToFillInTheBlankExercise(entity), nil
+	case exercise.TypeSentenceCorrection:
+		return mapToSentenceCorrectionExercise(entity), nil
+	default:
+		return nil, fmt.Errorf("unknown exercise type: %s", entity.Type)
+	}
+}
+
+func mapToMultipleChoiceExercise(entity ExerciseEntity) *exercise.MultipleChoiceExercise {
+	e := exercise.NewMultipleChoiceExercise(
+		entity.ID.String(),
+		entity.CreatedAt,
+		entity.UpdatedAt,
+		*entity.Question,
+		*entity.Choices,
+		*entity.Answer,
+	)
+	return &e
+}
+
+func mapToFillInTheBlankExercise(entity ExerciseEntity) *exercise.FillInTheBlankExercise {
+	e := exercise.NewFillInTheBlankExercise(
+		entity.ID.String(),
+		entity.CreatedAt,
+		entity.UpdatedAt,
+		*entity.Question,
+		*entity.Answer,
+	)
+	return &e
+}
+
+func mapToSentenceCorrectionExercise(entity ExerciseEntity) *exercise.SentenceCorrectionExercise {
+	e := exercise.NewSentenceCorrectionExercise(
+		entity.ID.String(),
+		entity.CreatedAt,
+		entity.UpdatedAt,
+		*entity.Sentence,
+		*entity.CorrectedSentence,
+	)
+	return &e
 }

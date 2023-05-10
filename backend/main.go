@@ -44,13 +44,10 @@ func main() {
 		log.Fatal(err)
 	}
 
-	exerciseStorage := postgres.NewExerciseStorage(dbpool)
-	exerciseHandler := api.NewExerciseHandler(exerciseStorage)
-
 	quizStorage := postgres.NewQuizStorage(dbpool)
 	quizHandler := api.NewQuizHandler(quizStorage)
 
-	var handlers = api.NewHandlers(exerciseHandler, quizHandler)
+	var handlers = api.NewHandlers(quizHandler)
 
 	var server = api.NewServer(handlers)
 	log.Fatal(server.Start(8888))

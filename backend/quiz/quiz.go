@@ -20,10 +20,10 @@ type Quiz struct {
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	Name      string
-	Sections  []QuizSection
+	Sections  []Section
 }
 
-func New(id string, createdAt, updatedAt time.Time, name string, sections []QuizSection) Quiz {
+func New(id string, createdAt, updatedAt time.Time, name string, sections []Section) Quiz {
 	return Quiz{
 		ID:        id,
 		CreatedAt: createdAt,
@@ -33,13 +33,13 @@ func New(id string, createdAt, updatedAt time.Time, name string, sections []Quiz
 	}
 }
 
-type QuizSection struct {
+type Section struct {
 	Name      string
 	Exercises []exercise.Exercise
 }
 
-func NewSection(name string, exercises []exercise.Exercise) QuizSection {
-	return QuizSection{
+func NewSection(name string, exercises []exercise.Exercise) Section {
+	return Section{
 		Name:      name,
 		Exercises: exercises,
 	}

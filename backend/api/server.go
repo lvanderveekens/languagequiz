@@ -23,10 +23,6 @@ func (s *Server) Start(port int) error {
 
 	r.POST("/v1/quizzes", createHandlerFunc(s.handlers.quiz.CreateQuiz))
 
-	r.GET("/v1/exercises", createHandlerFunc(s.handlers.exercise.GetExercises))
-	r.POST("/v1/exercises", createHandlerFunc(s.handlers.exercise.CreateExercise))
-	r.POST("/v1/exercises/answers", createHandlerFunc(s.handlers.exercise.SubmitAnswers))
-
 	return r.Run(":" + strconv.Itoa(port))
 }
 
@@ -46,13 +42,11 @@ func createHandlerFunc(f func(c *gin.Context) error) gin.HandlerFunc {
 }
 
 type Handlers struct {
-	exercise *ExerciseHandler
-	quiz     *QuizHandler
+	quiz *QuizHandler
 }
 
-func NewHandlers(exerciseHandler *ExerciseHandler, quizHandler *QuizHandler) *Handlers {
+func NewHandlers(quizHandler *QuizHandler) *Handlers {
 	return &Handlers{
-		exercise: exerciseHandler,
-		quiz:     quizHandler,
+		quiz: quizHandler,
 	}
 }
