@@ -19,6 +19,21 @@ func NewQuizHandler(quizStorage quiz.Storage) *QuizHandler {
 	return &QuizHandler{quizStorage: quizStorage}
 }
 
+func (h *QuizHandler) FindQuizzes(c *gin.Context) error {
+	quizzes, err := h.quizStorage.FindQuizzes()
+	if err != nil {
+		return fmt.Errorf("failed to find quizzes: %w", err)
+	}
+
+	dtos, err := mapToQuizDTOs(quizzes)
+	if err != nil {
+		return fmt.Errorf("failed to map quizzes to dtos: %w", err)
+	}
+
+	c.JSON(http.StatusOK, dtos)
+	return nil
+}
+
 func (h *QuizHandler) CreateQuiz(c *gin.Context) error {
 	var req createQuizRequest
 	err := c.ShouldBindJSON(&req)
@@ -200,6 +215,18 @@ func mapToQuizDTO(q quiz.Quiz) (*QuizDTO, error) {
 	}
 	quizDTO := newQuizDTO(q.Name, quizSectionDTOs)
 	return &quizDTO, nil
+}
+
+func mapToQuizDTOs(quizzes []quiz.Quiz) ([]QuizDTO, error) {
+	dtos := make([]QuizDTO, 0)
+	for _, quiz := range quizzes {
+		dto, err := mapToQuizDTO(quiz)
+		if err != nil {
+			return nil, fmt.Errorf("failed to map quiz to dto: %w", err)
+		}
+		dtos = append(dtos, *dto)
+	}
+	return dtos, nil
 }
 
 func mapToQuizSectionDTOs(quizSections []quiz.Section) ([]QuizSectionDTO, error) {

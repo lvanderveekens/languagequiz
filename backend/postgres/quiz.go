@@ -21,6 +21,115 @@ func NewQuizStorage(conn *pgxpool.Pool) *QuizStorage {
 	return &QuizStorage{dbpool: conn}
 }
 
+func (s *QuizStorage) FindQuizzes() ([]quiz.Quiz, error) {
+	rows, err := s.dbpool.Query(context.Background(), `
+		SELECT *
+		FROM quiz
+	`)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query quiz table: %w", err)
+	}
+	defer rows.Close()
+
+	quizEntities := make([]QuizEntity, 0)
+	for rows.Next() {
+		quizEntity, err := mapToQuizEntity(rows)
+		if err != nil {
+			return nil, fmt.Errorf("failed to map row to quiz entity: %w", err)
+		}
+		quizEntities = append(quizEntities, *quizEntity)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("failed to read quiz table rows: %w", err)
+	}
+
+	quizzes := make([]quiz.Quiz, 0)
+	for _, quizEntity := range quizEntities {
+		quizSectionEntities, err := s.findQuizSectionEntities(quizEntity.ID)
+		if err != nil {
+			return nil, fmt.Errorf("failed to find quiz section entities: %w", err)
+		}
+
+		quizSectionIDs := make([]uuid.UUID, 0)
+		for _, quizSectionEntity := range quizSectionEntities {
+			quizSectionIDs = append(quizSectionIDs, quizSectionEntity.ID)
+		}
+
+		exerciseEntitiesBySectionID, err := s.findExerciseEntitiesBySectionID(quizSectionIDs)
+		if err != nil {
+			return nil, fmt.Errorf("failed to find exercise entities: %w", err)
+		}
+
+		quiz, err := mapToQuiz(quizEntity, quizSectionEntities, exerciseEntitiesBySectionID)
+		if err != nil {
+			return nil, fmt.Errorf("failed to map entity to quiz: %w", err)
+		}
+		quizzes = append(quizzes, *quiz)
+	}
+
+	return quizzes, nil
+}
+
+func (s *QuizStorage) findExerciseEntitiesBySectionID(quizSectionIDs []uuid.UUID) (map[string][]ExerciseEntity, error) {
+	rows, err := s.dbpool.Query(context.Background(), `
+		SELECT *
+		FROM exercise
+		WHERE quiz_section_id = ANY ($1)
+	`, quizSectionIDs)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query exercise table: %w", err)
+	}
+	defer rows.Close()
+
+	exerciseEntities := make([]ExerciseEntity, 0)
+	for rows.Next() {
+		exerciseEntity, err := mapToExerciseEntity(rows)
+		if err != nil {
+			return nil, fmt.Errorf("failed to map row to exercise entity: %w", err)
+		}
+		exerciseEntities = append(exerciseEntities, *exerciseEntity)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("failed to read quiz table rows: %w", err)
+	}
+
+	exerciseEntitiesBySectionID := make(map[string][]ExerciseEntity)
+	for _, exerciseEntity := range exerciseEntities {
+		exerciseEntitiesBySectionID[exerciseEntity.QuizSectionID.String()] = append(
+			exerciseEntitiesBySectionID[exerciseEntity.QuizSectionID.String()],
+			exerciseEntity,
+		)
+	}
+
+	return exerciseEntitiesBySectionID, nil
+}
+
+func (s *QuizStorage) findQuizSectionEntities(quizID uuid.UUID) ([]QuizSectionEntity, error) {
+	rows, err := s.dbpool.Query(context.Background(), `
+		SELECT *
+		FROM quiz_section
+		WHERE quiz_id = $1
+	`, quizID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query quiz_section table: %w", err)
+	}
+	defer rows.Close()
+
+	quizSectionEntities := make([]QuizSectionEntity, 0)
+	for rows.Next() {
+		quizSectionEntity, err := mapToQuizSectionEntity(rows)
+		if err != nil {
+			return nil, fmt.Errorf("failed to map row to quiz section entity: %w", err)
+		}
+		quizSectionEntities = append(quizSectionEntities, *quizSectionEntity)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("failed to read quiz table rows: %w", err)
+	}
+
+	return quizSectionEntities, nil
+}
+
 func (s *QuizStorage) CreateQuiz(cmd quiz.CreateQuizCommand) (*quiz.Quiz, error) {
 	id, err := uuid.NewRandom()
 	if err != nil {
