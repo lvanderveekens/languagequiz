@@ -23,6 +23,14 @@ type Quiz struct {
 	Sections  []Section
 }
 
+func (q *Quiz) GetExercises() []exercise.Exercise {
+	exercises := make([]exercise.Exercise, 0)
+	for _, s := range q.Sections {
+		exercises = append(exercises, s.Exercises...)
+	}
+	return exercises
+}
+
 func New(id string, createdAt, updatedAt time.Time, name string, sections []Section) Quiz {
 	return Quiz{
 		ID:        id,

@@ -21,8 +21,10 @@ func NewServer(handlers *Handlers) *Server {
 func (s *Server) Start(port int) error {
 	r := gin.Default()
 
-	r.GET("/v1/quizzes", createHandlerFunc(s.handlers.quiz.FindQuizzes))
+	r.GET("/v1/quizzes", createHandlerFunc(s.handlers.quiz.GetQuizzes))
+	r.GET("/v1/quizzes/:id", createHandlerFunc(s.handlers.quiz.GetQuizByID))
 	r.POST("/v1/quizzes", createHandlerFunc(s.handlers.quiz.CreateQuiz))
+	r.POST("/v1/quizzes/:id/answers", createHandlerFunc(s.handlers.quiz.SubmitAnswers))
 
 	return r.Run(":" + strconv.Itoa(port))
 }

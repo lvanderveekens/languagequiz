@@ -4,136 +4,63 @@ import { useEffect, useState } from 'react'
 import MultipleChoiceExercise from './multiple-choice-exercise'
 import FillInTheBlankExercise from './fill-in-the-blank-exercise'
 import SentenceCorrectionExercise from './sentence-correction-exercise'
+import Quiz from './quiz'
 
 const inter = Inter({ subsets: ['latin'] })
 
-type Exercise = {
-  id: string;
-  type: string;
-  question?: string;
-  choices?: string[];
-  sentence?: string;
-};
-
 export default function Home() {
   const [exercises, setExercises] = useState<Exercise[]>([]);
-  const [answers, setAnswers] = useState<any[]>([]);
-
-  const [results, setResults] = useState<boolean[]>();
+  const [quizzes, setQuizzes] = useState<Quiz[]>([]);
 
   useEffect(() => {
-    fetch("/api/exercises")
+    fetch("/api/quizzes")
       .then((res) => res.json())
-      .then((exercises) => {
-        setExercises(exercises);
-        setAnswers(Array.from({ length: exercises.length }, () => null));
-      });
+      .then((quizzes) => {
+        setQuizzes(quizzes);
+      })
   }, []);
-
-  const handleSubmit = async (event: any) => {
-    event.preventDefault();
-    console.log(answers)
-
-    try {
-      const req: SubmitAnswersRequest = {
-        submissions: exercises.map((exercise, i) => {
-          return { exerciseId: exercise.id, answer: answers[i] };
-        }),
-      };
-
-      const res = await fetch("/api/submit-answers", {
-        method: "POST",
-        body: JSON.stringify(req),
-        headers: { "Content-Type": "application/json" },
-      });
-
-      const resBody = await res.json() as SubmitAnswersResponse
-      setResults(resBody.results.map((result) => result.correct))
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  const setAnswer = (index: number) => {
-    return (updatedAnswer: any) => {
-      setAnswers((prevAnswers) =>
-        prevAnswers.map((prevAnswer, i) => {
-          if (i !== index) {
-            return prevAnswer;
-          }
-          return updatedAnswer;
-        })
-      );
-    };
-  };
 
   return (
     <main>
       <div className="container mx-auto">
-        {exercises.length > 0 && (
-          <form onSubmit={handleSubmit}>
-            {exercises.map((exercise, i) => {
-              switch (exercise.type) {
-                case "multipleChoice":
-                  return (
-                    <MultipleChoiceExercise
-                      key={exercise.id}
-                      question={exercise.question!}
-                      choices={exercise.choices!}
-                      answer={answers[i]}
-                      setAnswer={setAnswer(i)}
-                    />
-                  );
-                case "fillInTheBlank":
-                  return (
-                    <FillInTheBlankExercise
-                      key={exercise.id}
-                      question={exercise.question!}
-                      answer={answers[i]}
-                      setAnswer={setAnswer(i)}
-                    />
-                  );
-                case "sentenceCorrection":
-                  return (
-                    <SentenceCorrectionExercise
-                      key={exercise.id}
-                      sentence={exercise.sentence!}
-                      answer={answers[i]}
-                      setAnswer={setAnswer(i)}
-                    />
-                  );
-                default:
-                  return <p>Unexpected exercise type: {exercise.type}</p>;
-              }
-            })}
-
-            <button type="submit">Submit</button>
-          </form>
-        )}
-        {results && (
-          <p>{JSON.stringify(results)}</p>
+        {quizzes.length > 0 && (
+          quizzes.map((quiz, i) => {
+            return <Quiz key={quiz.id} id={quiz.id} name={quiz.name} sections={quiz.sections} />;
+          })
         )}
       </div>
     </main>
   );
 }
 
-interface SubmitAnswersRequest {
-  submissions: ExerciseSubmission[]
+export interface Quiz {
+  id: string
+  name: string
+  sections: QuizSection[]
 }
 
-interface ExerciseSubmission {
-  exerciseId: string
-  answer: any
+export interface QuizSection {
+  name: string
+  exercises: Exercise[]
 }
 
-interface SubmitAnswersResponse{
-  results: ExerciseResult[]
+export interface Exercise {
+  id: string
+  type: string
+  question?: string
+  choices?: string[]
+  sentence?: string
 }
 
-interface ExerciseResult {
-  exerciseId: string
-  exerciseType: string
+export interface SubmitAnswersRequest {
+  userAnswers: any[]
+}
+
+export interface SubmitAnswersResponse{
+  results: SubmitAnswerResult[]
+}
+
+export interface SubmitAnswerResult {
   correct: boolean
   answer: any
 }

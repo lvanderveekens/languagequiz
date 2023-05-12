@@ -21,6 +21,26 @@ func NewQuizStorage(conn *pgxpool.Pool) *QuizStorage {
 	return &QuizStorage{dbpool: conn}
 }
 
+func (s *QuizStorage) FindByID(id string) (*quiz.Quiz, error) {
+	uuid, err := uuid.Parse(id)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse id as uuid: %w", err)
+	}
+
+	row := s.dbpool.QueryRow(context.Background(), `
+		SELECT *
+		FROM quiz
+		WHERE id = $1
+	`, uuid)
+
+	entity, err := mapToQuizEntity(row)
+	if err != nil {
+		return nil, fmt.Errorf("failed to map row to entity: %w", err)
+	}
+
+	return s.buildQuiz(*entity)
+}
+
 func (s *QuizStorage) FindQuizzes() ([]quiz.Quiz, error) {
 	rows, err := s.dbpool.Query(context.Background(), `
 		SELECT *
@@ -45,22 +65,7 @@ func (s *QuizStorage) FindQuizzes() ([]quiz.Quiz, error) {
 
 	quizzes := make([]quiz.Quiz, 0)
 	for _, quizEntity := range quizEntities {
-		quizSectionEntities, err := s.findQuizSectionEntities(quizEntity.ID)
-		if err != nil {
-			return nil, fmt.Errorf("failed to find quiz section entities: %w", err)
-		}
-
-		quizSectionIDs := make([]uuid.UUID, 0)
-		for _, quizSectionEntity := range quizSectionEntities {
-			quizSectionIDs = append(quizSectionIDs, quizSectionEntity.ID)
-		}
-
-		exerciseEntitiesBySectionID, err := s.findExerciseEntitiesBySectionID(quizSectionIDs)
-		if err != nil {
-			return nil, fmt.Errorf("failed to find exercise entities: %w", err)
-		}
-
-		quiz, err := mapToQuiz(quizEntity, quizSectionEntities, exerciseEntitiesBySectionID)
+		quiz, err := s.buildQuiz(quizEntity)
 		if err != nil {
 			return nil, fmt.Errorf("failed to map entity to quiz: %w", err)
 		}
@@ -68,6 +73,25 @@ func (s *QuizStorage) FindQuizzes() ([]quiz.Quiz, error) {
 	}
 
 	return quizzes, nil
+}
+
+func (s *QuizStorage) buildQuiz(quizEntity QuizEntity) (*quiz.Quiz, error) {
+	quizSectionEntities, err := s.findQuizSectionEntities(quizEntity.ID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to find quiz section entities: %w", err)
+	}
+
+	quizSectionIDs := make([]uuid.UUID, 0)
+	for _, quizSectionEntity := range quizSectionEntities {
+		quizSectionIDs = append(quizSectionIDs, quizSectionEntity.ID)
+	}
+
+	exerciseEntitiesBySectionID, err := s.findExerciseEntitiesBySectionID(quizSectionIDs)
+	if err != nil {
+		return nil, fmt.Errorf("failed to find exercise entities: %w", err)
+	}
+
+	return combineEntitiesIntoQuiz(quizEntity, quizSectionEntities, exerciseEntitiesBySectionID)
 }
 
 func (s *QuizStorage) findExerciseEntitiesBySectionID(quizSectionIDs []uuid.UUID) (map[string][]ExerciseEntity, error) {
@@ -195,7 +219,7 @@ func (s *QuizStorage) CreateQuiz(cmd quiz.CreateQuizCommand) (*quiz.Quiz, error)
 		return nil, fmt.Errorf("failed to commit transaction: %w", err)
 	}
 
-	return mapToQuiz(*quizEntity, quizSectionEntities, exerciseEntitiesBySectionID)
+	return combineEntitiesIntoQuiz(*quizEntity, quizSectionEntities, exerciseEntitiesBySectionID)
 }
 
 func insertMultipleChoiceExercise(
@@ -295,7 +319,7 @@ func mapToExerciseEntity(row pgx.Row) (*ExerciseEntity, error) {
 	return &entity, err
 }
 
-func mapToQuiz(
+func combineEntitiesIntoQuiz(
 	quizEntity QuizEntity,
 	quizSectionEntities []QuizSectionEntity,
 	exerciseEntitiesBySectionID map[string][]ExerciseEntity,

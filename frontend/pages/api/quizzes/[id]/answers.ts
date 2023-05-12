@@ -5,7 +5,9 @@ export default async function handler(
   res: NextApiResponse
 ) {
   try {
-    const response = await fetch('http://localhost:8888/v1/exercises/answers', {
+    const { id } = req.query
+
+    const response = await fetch(`http://localhost:8888/v1/quizzes/${id}/answers`, {
       method: 'POST',
       body: JSON.stringify(req.body),
       headers: {

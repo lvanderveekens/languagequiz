@@ -19,7 +19,24 @@ func NewQuizHandler(quizStorage quiz.Storage) *QuizHandler {
 	return &QuizHandler{quizStorage: quizStorage}
 }
 
-func (h *QuizHandler) FindQuizzes(c *gin.Context) error {
+func (h *QuizHandler) GetQuizByID(c *gin.Context) error {
+	id := c.Param("id")
+
+	quiz, err := h.quizStorage.FindByID(id)
+	if err != nil {
+		return fmt.Errorf("failed to find quiz: %w", err)
+	}
+
+	dto, err := mapToQuizDTO(*quiz)
+	if err != nil {
+		return fmt.Errorf("failed to map quiz to dto: %w", err)
+	}
+
+	c.JSON(http.StatusOK, *dto)
+	return nil
+}
+
+func (h *QuizHandler) GetQuizzes(c *gin.Context) error {
 	quizzes, err := h.quizStorage.FindQuizzes()
 	if err != nil {
 		return fmt.Errorf("failed to find quizzes: %w", err)
@@ -213,7 +230,7 @@ func mapToQuizDTO(q quiz.Quiz) (*QuizDTO, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to map quiz sections to dtos: %w", err)
 	}
-	quizDTO := newQuizDTO(q.Name, quizSectionDTOs)
+	quizDTO := newQuizDTO(q.ID, q.Name, quizSectionDTOs)
 	return &quizDTO, nil
 }
 
@@ -254,12 +271,14 @@ func mapToExerciseDTOs(exercises []exercise.Exercise) ([]any, error) {
 }
 
 type QuizDTO struct {
+	ID       string           `json:"id"`
 	Name     string           `json:"name"`
 	Sections []QuizSectionDTO `json:"sections"`
 }
 
-func newQuizDTO(name string, sections []QuizSectionDTO) QuizDTO {
+func newQuizDTO(id, name string, sections []QuizSectionDTO) QuizDTO {
 	return QuizDTO{
+		ID:       id,
 		Name:     name,
 		Sections: sections,
 	}
@@ -275,4 +294,67 @@ func newQuizSectionDTO(name string, exercises []any) QuizSectionDTO {
 		Name:      name,
 		Exercises: exercises,
 	}
+}
+
+type submitAnswersRequest struct {
+	UserAnswers []any `json:"userAnswers"`
+}
+
+func (r *submitAnswersRequest) validate() error {
+	if r.UserAnswers == nil {
+		return errors.New("field 'userAnswers' is missing")
+	}
+	return nil
+}
+
+type submitAnswersResponse struct {
+	Results []submitAnswerResult `json:"results"`
+}
+
+func newSubmitAnswersResponse(results []submitAnswerResult) submitAnswersResponse {
+	return submitAnswersResponse{
+		Results: results,
+	}
+}
+
+type submitAnswerResult struct {
+	Correct bool `json:"correct"`
+	Answer  any  `json:"answer"`
+}
+
+func newSubmitAnswerResult(correct bool, answer any) submitAnswerResult {
+	return submitAnswerResult{
+		Correct: correct,
+		Answer:  answer,
+	}
+}
+
+func (h *QuizHandler) SubmitAnswers(c *gin.Context) error {
+	id := c.Param("id")
+
+	var req submitAnswersRequest
+	err := c.ShouldBindJSON(&req)
+	if err != nil {
+		return fmt.Errorf("failed to decode request body: %w", err)
+	}
+
+	if err := req.validate(); err != nil {
+		return NewError(http.StatusBadRequest, err.Error())
+	}
+
+	quiz, err := h.quizStorage.FindByID(id)
+	if err != nil {
+		return fmt.Errorf("failed to find quiz by id: %s, cause: %w", id, err)
+	}
+
+	exercises := quiz.GetExercises()
+	results := make([]submitAnswerResult, 0)
+	for i, userAnswer := range req.UserAnswers {
+		exercise := exercises[i]
+		correct := exercise.CheckAnswer(userAnswer)
+		results = append(results, newSubmitAnswerResult(correct, exercise.GetAnswer()))
+	}
+
+	c.JSON(http.StatusOK, newSubmitAnswersResponse(results))
+	return nil
 }
