@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ChangeEvent } from 'react';
-import { Exercise, QuizSection, SubmitAnswersRequest, SubmitAnswersResponse } from '.';
+import { ExerciseDto, QuizSectionDto, SubmitAnswersRequest, SubmitAnswersResponse } from './models';
 import MultipleChoiceExercise from './multiple-choice-exercise';
 import FillInTheBlankExercise from './fill-in-the-blank-exercise';
 import SentenceCorrectionExercise from './sentence-correction-exercise';
@@ -8,7 +8,7 @@ import SentenceCorrectionExercise from './sentence-correction-exercise';
 type Props = {
   id: string
   name: string
-  sections: QuizSection[]
+  sections: QuizSectionDto[]
 };
 
 const Quiz: React.FC<Props> = ({
@@ -16,7 +16,7 @@ const Quiz: React.FC<Props> = ({
   name,
   sections,
 }) => {
-  const [exercises, setExercises] = useState<Exercise[]>(sections.flatMap(section => section.exercises));
+  const [exercises, setExercises] = useState<ExerciseDto[]>(sections.flatMap(section => section.exercises));
   const [answers, setAnswers] = useState<any[]>(Array.from({ length: exercises.length }, () => null));
   const [results, setResults] = useState<boolean[]>();
 
@@ -64,7 +64,7 @@ const Quiz: React.FC<Props> = ({
       <div className="font-bold">Quiz: {name}</div>
       <div>
         <form onSubmit={handleSubmit}>
-          {sections.map((section: QuizSection) => (
+          {sections.map((section: QuizSectionDto) => (
             <div key={section.name}>
               <div className="font-bold">Section: {section.name}</div>
               <div>

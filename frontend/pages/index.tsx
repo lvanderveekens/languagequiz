@@ -1,16 +1,15 @@
-import Image from 'next/image'
 import { Inter } from 'next/font/google'
+import Link from 'next/link'
+import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
-import MultipleChoiceExercise from './multiple-choice-exercise'
-import FillInTheBlankExercise from './fill-in-the-blank-exercise'
-import SentenceCorrectionExercise from './sentence-correction-exercise'
-import Quiz from './quiz'
+import { QuizDto } from '../components/models'
 
 const inter = Inter({ subsets: ['latin'] })
 
 export default function Home() {
-  const [exercises, setExercises] = useState<Exercise[]>([]);
-  const [quizzes, setQuizzes] = useState<Quiz[]>([]);
+  const router = useRouter();
+
+  const [quizzes, setQuizzes] = useState<QuizDto[]>([]);
 
   useEffect(() => {
     fetch("/api/quizzes")
@@ -23,44 +22,17 @@ export default function Home() {
   return (
     <main>
       <div className="container mx-auto">
-        {quizzes.length > 0 && (
+        Quizzes:
+        {quizzes.length > 0 &&
           quizzes.map((quiz, i) => {
-            return <Quiz key={quiz.id} id={quiz.id} name={quiz.name} sections={quiz.sections} />;
-          })
-        )}
+            return (
+              <div key={quiz.id}>
+                <Link href={`/quizzes/${quiz.id}`}>{quiz.name}</Link>
+              </div>
+            );
+          })}
+        <button className="border border-black px-3" onClick={() => router.push("/create-quiz")}>Create quiz</button>
       </div>
     </main>
   );
-}
-
-export interface Quiz {
-  id: string
-  name: string
-  sections: QuizSection[]
-}
-
-export interface QuizSection {
-  name: string
-  exercises: Exercise[]
-}
-
-export interface Exercise {
-  id: string
-  type: string
-  question?: string
-  choices?: string[]
-  sentence?: string
-}
-
-export interface SubmitAnswersRequest {
-  userAnswers: any[]
-}
-
-export interface SubmitAnswersResponse{
-  results: SubmitAnswerResult[]
-}
-
-export interface SubmitAnswerResult {
-  correct: boolean
-  answer: any
 }
