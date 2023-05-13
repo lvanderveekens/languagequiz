@@ -1,9 +1,11 @@
 
+import { QuizDto } from '@/components/models';
+import Quiz from '@/components/quiz';
 import { Inter } from 'next/font/google'
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
-import Quiz from '../../components/quiz';
-import { QuizDto } from '../../components/models';
+// import Quiz from '../quiz';
+// import { QuizDto } from '../components/models';
 
 const inter = Inter({ subsets: ['latin'] })
 

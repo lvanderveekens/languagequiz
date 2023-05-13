@@ -6,7 +6,7 @@ import { QuizDto } from '../components/models'
 
 const inter = Inter({ subsets: ['latin'] })
 
-export default function Home() {
+export default function HomePage() {
   const router = useRouter();
 
   const [quizzes, setQuizzes] = useState<QuizDto[]>([]);
