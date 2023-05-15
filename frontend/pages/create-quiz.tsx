@@ -81,24 +81,32 @@ export default function CreateQuizPage() {
   );
 }
 
-type Props = {
+type QuizSectionInputProps = {
   name?: string
   onNameChange: (name: string) => void
   exercises?: ExerciseFormValues[]
   onExercisesChange: (exercises: ExerciseFormValues[]) => void
 };
 
-const QuizSectionInput: React.FC<Props> = ({
+const QuizSectionInput: React.FC<QuizSectionInputProps> = ({
   name,
-  onNameChange: setName,
+  onNameChange,
   exercises,
-  onExercisesChange: setExercises
+  onExercisesChange,
 }) => {
 
   const handleAddExerciseClick = () => {
     const newExercise = { _key: uuidv4() };
-    setExercises([...(exercises ?? []), newExercise]);
+    onExercisesChange([...(exercises ?? []), newExercise]);
   };
+
+  const handleExerciseChange =
+    (index: number) => (value: ExerciseFormValues) => {
+      const updatedExercises = [...(exercises ?? [])];
+      updatedExercises[index] = value;
+
+      onExercisesChange(updatedExercises);
+    };
 
   return (
     <div className="border border-black">
@@ -110,13 +118,13 @@ const QuizSectionInput: React.FC<Props> = ({
             className="border border-black"
             type="text"
             value={name ?? ""}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e) => onNameChange(e.target.value)}
           />
         </label>
       </div>
       {exercises &&
         exercises.map((formValues: ExerciseFormValues, i) => (
-          <p key={formValues._key}>EXERCISE YO</p>
+          <ExerciseInput key={formValues._key} value={exercises[i]} onChange={handleExerciseChange(i)} />
         ))}
       <div>
         <button
@@ -127,6 +135,162 @@ const QuizSectionInput: React.FC<Props> = ({
           Add exercise
         </button>
       </div>
+    </div>
+  );
+}
+
+type ExerciseInputProps = {
+  value: ExerciseFormValues
+  onChange: (value: ExerciseFormValues) => void
+};
+
+const ExerciseInput: React.FC<ExerciseInputProps> = ({
+  value,
+  onChange,
+}) => {
+
+  // const [exerciseType, setExerciseType] = useState<ExerciseType | undefined>()
+
+  const handleSelectChange = (event: any) => {
+    onChange({...value, type: event.target.value})
+  };
+
+  if (!value.type) {
+    return (
+      <div className="border border-black">
+        Exercise
+        <div>
+          <label htmlFor="choice">Choose an exercise type:</label>
+          <select
+            id="choice"
+            name="choice"
+            value={value.type}
+            onChange={handleSelectChange}
+          >
+            <option value="">Select an option</option>
+            {Object.values(ExerciseType)
+              .filter((key) => isNaN(Number(key)))
+              .map((exerciseType) => (
+                <option key={exerciseType} value={exerciseType}>{exerciseType}</option>
+              ))}
+          </select>
+        </div>
+      </div>
+    );
+  }
+
+  switch (value.type) {
+    case ExerciseType.MultipleChoice:
+      return (
+        <MultipleChoiceExerciseInput
+          question={value.question}
+          choices={value.choices}
+          answer={value.answer}
+          onQuestionChange={(question: string) => onChange({...value, question: question})}
+          onChoicesChange={(choices: string[]) => onChange({...value, choices: choices})}
+          onAnswerChange={(answer: string) => onChange({...value, answer: answer})}
+        />
+      );
+    case ExerciseType.FillInTheBlank:
+      return <FillInTheBlankExerciseInput />
+    case ExerciseType.SentenceCorrection:
+      return <SentenceCorrectionExerciseInput />
+    default:
+      return <p>Unknown exercise type</p>
+  }
+}
+
+type MultipleChoiceExerciseInputProps = {
+  question?: string
+  choices?: string[]
+  answer?: string
+  onQuestionChange: (question: string) => void
+  onChoicesChange: (choices: string[]) => void
+  onAnswerChange: (answer: string) => void
+};
+
+const MultipleChoiceExerciseInput: React.FC<MultipleChoiceExerciseInputProps> = ({
+  question,
+  choices,
+  answer,
+  onQuestionChange,
+  onChoicesChange,
+  onAnswerChange,
+}) => {
+
+  // TODO: 1 question
+  // TODO: 4 choices
+  // TODO: 1 answer
+
+  const handleChoiceChange = (index: number) => (event: any) => {
+    const { value } = event.target;
+    const updatedChoices = [...(choices ?? new Array(4))]
+    updatedChoices[index] = value
+    onChoicesChange(updatedChoices);
+  };
+
+  return (
+    <div className="border border-black">
+      Multiple Choice Exercise!!
+      <div>
+        <label>
+          <span className="mr-3">Question</span>
+          <input
+            className="border border-black"
+            type="text"
+            value={question ?? ""}
+            onChange={(e) => onQuestionChange(e.target.value)}
+          />
+        </label>
+      </div>
+      <div>
+        <label>
+          <span className="mr-3">Choice 1</span>
+          <input
+            className="border border-black"
+            type="text"
+            value={choices?.[0] ?? ""}
+            onChange={handleChoiceChange(0)}
+          />
+        </label>
+      </div>
+      <div>
+        <label>
+          <span className="mr-3">Answer</span>
+          <input
+            className="border border-black"
+            type="text"
+            value={answer ?? ""}
+            onChange={(e) => onAnswerChange(e.target.value)}
+          />
+        </label>
+      </div>
+    </div>
+  );
+}
+
+type FillInTheBlankExerciseInputProps = {
+};
+
+const FillInTheBlankExerciseInput: React.FC<FillInTheBlankExerciseInputProps> = ({
+}) => {
+
+  return (
+    <div className="border border-black">
+      Fill In The Blank Exercise
+    </div>
+  );
+}
+
+type SentenceCorrectionExerciseInputProps = {
+};
+
+const SentenceCorrectionExerciseInput: React.FC<SentenceCorrectionExerciseInputProps> = ({
+}) => {
+
+  return (
+    <div className="border border-black">
+      Sentence Correction Exercise
     </div>
   );
 }
@@ -148,4 +312,11 @@ interface ExerciseFormValues {
   question?: string;
   choices?: string[];
   sentence?: string;
+  answer?: string
+}
+
+enum ExerciseType {
+  MultipleChoice = "multipleChoice",
+  FillInTheBlank = "fillInTheBlank",
+  SentenceCorrection = "sentenceCorrection",
 }
