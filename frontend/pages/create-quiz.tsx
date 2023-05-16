@@ -1,8 +1,22 @@
+import { CreateQuizRequest, ExerciseType } from "@/components/models";
 import { useState } from "react";
 import { v4 as uuidv4 } from 'uuid';
 
+const initialQuizFormValues: QuizFormValues = {
+  sections: [
+    {
+      _key: uuidv4(),
+      exercises: [
+        {
+          _key: uuidv4(),
+        },
+      ],
+    },
+  ],
+};
+
 export default function CreateQuizPage() {
-  const [formValues, setFormValues] = useState<QuizFormValues>({})
+  const [formValues, setFormValues] = useState<QuizFormValues>(initialQuizFormValues)
 
   const handleNameChange = (event: any) => {
     setFormValues({ ...formValues, name: event.target.value });
@@ -10,9 +24,40 @@ export default function CreateQuizPage() {
 
   const handleSubmit = async (event: any) => {
     event.preventDefault();
+    console.log(`Submitting form with values: ${JSON.stringify(formValues)}`)
 
-    console.log(`Form submitted with values: ${JSON.stringify(formValues)}`)
+    try {
+      const req = mapToRequest(formValues);
+      console.log(`Request: ${JSON.stringify(req)}`);
+
+      const res = await fetch(`/api/quizzes`, {
+        method: "POST",
+        body: JSON.stringify(req),
+        headers: { "Content-Type": "application/json" },
+      });
+      console.log(res)
+    } catch (error) {
+      console.error(error);
+    }
   };
+
+  const mapToRequest = (formValues: QuizFormValues) => {
+    const req: CreateQuizRequest = {
+      name: formValues.name!,
+      sections: formValues.sections!.map((section) => ({
+        name: section.name!,
+        exercises: section.exercises!.map((exercise) => ({
+          type: exercise.type!,
+          question: exercise.question,
+          choices: exercise.choices,
+          sentence: exercise.sentence,
+          correctedSentence: exercise.correctedSentence,
+          answer: exercise.answer,
+        })),
+      })),
+    };
+    return req;
+  }
 
   const handleSectionNameChange = (sectionIndex: any) => (sectionName: string) => {
     const updatedSections = [...(formValues.sections ?? [])]
@@ -47,6 +92,7 @@ export default function CreateQuizPage() {
               type="text"
               value={formValues.name ?? ""}
               onChange={handleNameChange}
+              required
             />
           </label>
         </div>
@@ -119,6 +165,7 @@ const QuizSectionInput: React.FC<QuizSectionInputProps> = ({
             type="text"
             value={name ?? ""}
             onChange={(e) => onNameChange(e.target.value)}
+            required
           />
         </label>
       </div>
@@ -164,6 +211,7 @@ const ExerciseInput: React.FC<ExerciseInputProps> = ({
             name="choice"
             value={value.type}
             onChange={handleTypeChange}
+            required
           >
             <option value="">Select an option</option>
             {Object.values(ExerciseType)
@@ -260,6 +308,7 @@ const MultipleChoiceExerciseInput: React.FC<MultipleChoiceExerciseInputProps> = 
             type="text"
             value={question ?? ""}
             onChange={(e) => onQuestionChange(e.target.value)}
+            required
           />
         </label>
       </div>
@@ -271,6 +320,7 @@ const MultipleChoiceExerciseInput: React.FC<MultipleChoiceExerciseInputProps> = 
             type="text"
             value={choices?.[0] ?? ""}
             onChange={handleChoiceChange(0)}
+            required
           />
         </label>
       </div>
@@ -282,6 +332,7 @@ const MultipleChoiceExerciseInput: React.FC<MultipleChoiceExerciseInputProps> = 
             type="text"
             value={choices?.[1] ?? ""}
             onChange={handleChoiceChange(1)}
+            required
           />
         </label>
       </div>
@@ -315,6 +366,7 @@ const MultipleChoiceExerciseInput: React.FC<MultipleChoiceExerciseInputProps> = 
             type="text"
             value={answer ?? ""}
             onChange={(e) => onAnswerChange(e.target.value)}
+            required
           />
         </label>
       </div>
@@ -347,6 +399,7 @@ const FillInTheBlankExerciseInput: React.FC<FillInTheBlankExerciseInputProps> = 
             type="text"
             value={question ?? ""}
             onChange={(e) => onQuestionChange(e.target.value)}
+            required
           />
         </label>
       </div>
@@ -358,6 +411,7 @@ const FillInTheBlankExerciseInput: React.FC<FillInTheBlankExerciseInputProps> = 
             type="text"
             value={answer ?? ""}
             onChange={(e) => onAnswerChange(e.target.value)}
+            required
           />
         </label>
       </div>
@@ -427,10 +481,4 @@ interface ExerciseFormValues {
   sentence?: string;
   correctedSentence?: string;
   answer?: string
-}
-
-enum ExerciseType {
-  MultipleChoice = "multipleChoice",
-  FillInTheBlank = "fillInTheBlank",
-  SentenceCorrection = "sentenceCorrection",
 }
