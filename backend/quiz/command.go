@@ -1,17 +1,22 @@
 package quiz
 
+import "golang.org/x/text/language"
+
 type CreateQuizCommand struct {
-	Name     string
-	Sections []CreateQuizSectionCommand
+	Name        string
+	LanguageTag language.Tag
+	Sections    []CreateQuizSectionCommand
 }
 
 func NewCreateQuizCommand(
 	name string,
+	languageTag language.Tag,
 	sections []CreateQuizSectionCommand,
 ) CreateQuizCommand {
 	return CreateQuizCommand{
-		Name:     name,
-		Sections: sections,
+		Name:        name,
+		LanguageTag: languageTag,
+		Sections:    sections,
 	}
 }
 

@@ -81,7 +81,8 @@ func mapSentenceCorrectionExerciseToDTO(e exercise.SentenceCorrectionExercise) s
 }
 
 type createExerciseRequestBase struct {
-	Type string `json:"type"`
+	Type     string  `json:"type"`
+	Feedback *string `json:"feedback"`
 }
 
 type createMultipleChoiceExerciseRequest struct {
@@ -96,6 +97,7 @@ func (r *createMultipleChoiceExerciseRequest) toCommand() (*exercise.CreateMulti
 		r.Question,
 		r.Choices,
 		r.Answer,
+		r.Feedback,
 	)
 }
 
@@ -122,6 +124,7 @@ func (r *createFillInTheBlankExerciseRequest) toCommand() (*exercise.CreateFillI
 	return exercise.NewCreateFillInTheBlankExerciseCommand(
 		r.Question,
 		r.Answer,
+		r.Feedback,
 	)
 }
 
@@ -145,6 +148,7 @@ func (r *createSentenceCorrectionExerciseRequest) toCommand() (*exercise.CreateS
 	return exercise.NewCreateSentenceCorrectionExerciseCommand(
 		r.Sentence,
 		r.CorrectedSentence,
+		r.Feedback,
 	)
 }
 

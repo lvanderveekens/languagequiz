@@ -2,25 +2,19 @@ package quiz
 
 import (
 	"languagequiz/quiz/exercise"
+
 	"time"
+
+	"golang.org/x/text/language"
 )
 
-// Quiz: Name
-//   Section A: Name
-// 		1. Exercise
-// 		2. Exercise
-// 		3. Exercise
-//   Section B: Name
-// 		1. Exercise
-// 		2. Exercise
-// 		3. Exercise
-
 type Quiz struct {
-	ID        string
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	Name      string
-	Sections  []Section
+	ID          string
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
+	Name        string
+	LanguageTag language.Tag
+	Sections    []Section
 }
 
 func (q *Quiz) GetExercises() []exercise.Exercise {
@@ -31,13 +25,14 @@ func (q *Quiz) GetExercises() []exercise.Exercise {
 	return exercises
 }
 
-func New(id string, createdAt, updatedAt time.Time, name string, sections []Section) Quiz {
+func New(id string, createdAt, updatedAt time.Time, name string, languageTag language.Tag, sections []Section) Quiz {
 	return Quiz{
-		ID:        id,
-		CreatedAt: createdAt,
-		UpdatedAt: updatedAt,
-		Name:      name,
-		Sections:  sections,
+		ID:          id,
+		CreatedAt:   createdAt,
+		UpdatedAt:   updatedAt,
+		Name:        name,
+		LanguageTag: languageTag,
+		Sections:    sections,
 	}
 }
 

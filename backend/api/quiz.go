@@ -9,6 +9,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"golang.org/x/text/language"
 )
 
 type QuizHandler struct {
@@ -82,16 +83,23 @@ func (h *QuizHandler) CreateQuiz(c *gin.Context) error {
 }
 
 type createQuizRequest struct {
-	Name     string                     `json:"name"`
-	Sections []createQuizSectionRequest `json:"sections"`
+	Name        string                     `json:"name"`
+	LanguageTag string                     `json:"languageTag"`
+	Sections    []createQuizSectionRequest `json:"sections"`
 }
 
 func (r *createQuizRequest) validate() error {
 	if r.Name == "" {
 		return errors.New("field 'name' is missing")
 	}
+	if r.LanguageTag == "" {
+		return errors.New("field 'languageTag' is missing")
+	}
 	if r.Sections == nil {
 		return errors.New("field 'sections' is missing")
+	}
+	if len(r.Sections) == 0 {
+		return errors.New("field 'sections' is empty")
 	}
 	for _, createSectionRequest := range r.Sections {
 		if err := createSectionRequest.validate(); err != nil {
@@ -102,6 +110,11 @@ func (r *createQuizRequest) validate() error {
 }
 
 func (r *createQuizRequest) toCommand() (*quiz.CreateQuizCommand, error) {
+	languageTag, err := language.Parse(r.LanguageTag)
+	if err != nil {
+		return nil, NewError(http.StatusBadRequest, err.Error())
+	}
+
 	createSectionCommands := make([]quiz.CreateQuizSectionCommand, 0)
 	for _, createSectionRequest := range r.Sections {
 		createSectionCommand, err := createSectionRequest.toCommand()
@@ -111,7 +124,7 @@ func (r *createQuizRequest) toCommand() (*quiz.CreateQuizCommand, error) {
 		createSectionCommands = append(createSectionCommands, *createSectionCommand)
 	}
 
-	createQuizCommand := quiz.NewCreateQuizCommand(r.Name, createSectionCommands)
+	createQuizCommand := quiz.NewCreateQuizCommand(r.Name, languageTag, createSectionCommands)
 	return &createQuizCommand, nil
 }
 
@@ -126,6 +139,9 @@ func (r *createQuizSectionRequest) validate() error {
 	}
 	if r.Exercises == nil {
 		return errors.New("field 'exercises' is missing")
+	}
+	if len(r.Exercises) == 0 {
+		return errors.New("field 'exercises' is empty")
 	}
 	for _, createExerciseRequestRaw := range r.Exercises {
 		var createExerciseRequestJson map[string]any
@@ -230,7 +246,7 @@ func mapToQuizDTO(q quiz.Quiz) (*QuizDTO, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to map quiz sections to dtos: %w", err)
 	}
-	quizDTO := newQuizDTO(q.ID, q.Name, quizSectionDTOs)
+	quizDTO := newQuizDTO(q.ID, q.Name, q.LanguageTag.String(), quizSectionDTOs)
 	return &quizDTO, nil
 }
 
@@ -271,16 +287,18 @@ func mapToExerciseDTOs(exercises []exercise.Exercise) ([]any, error) {
 }
 
 type QuizDTO struct {
-	ID       string           `json:"id"`
-	Name     string           `json:"name"`
-	Sections []QuizSectionDTO `json:"sections"`
+	ID          string           `json:"id"`
+	Name        string           `json:"name"`
+	LanguageTag string           `json:"languageTag"`
+	Sections    []QuizSectionDTO `json:"sections"`
 }
 
-func newQuizDTO(id, name string, sections []QuizSectionDTO) QuizDTO {
+func newQuizDTO(id, name, languageTag string, sections []QuizSectionDTO) QuizDTO {
 	return QuizDTO{
-		ID:       id,
-		Name:     name,
-		Sections: sections,
+		ID:          id,
+		Name:        name,
+		LanguageTag: languageTag,
+		Sections:    sections,
 	}
 }
 
@@ -318,14 +336,16 @@ func newSubmitAnswersResponse(results []submitAnswerResult) submitAnswersRespons
 }
 
 type submitAnswerResult struct {
-	Correct bool `json:"correct"`
-	Answer  any  `json:"answer"`
+	Correct  bool    `json:"correct"`
+	Answer   any     `json:"answer"`
+	Feedback *string `json:"feedback,omitempty"`
 }
 
-func newSubmitAnswerResult(correct bool, answer any) submitAnswerResult {
+func newSubmitAnswerResult(correct bool, answer any, feedback *string) submitAnswerResult {
 	return submitAnswerResult{
-		Correct: correct,
-		Answer:  answer,
+		Correct:  correct,
+		Answer:   answer,
+		Feedback: feedback,
 	}
 }
 
@@ -352,7 +372,7 @@ func (h *QuizHandler) SubmitAnswers(c *gin.Context) error {
 	for i, userAnswer := range req.UserAnswers {
 		exercise := exercises[i]
 		correct := exercise.CheckAnswer(userAnswer)
-		results = append(results, newSubmitAnswerResult(correct, exercise.GetAnswer()))
+		results = append(results, newSubmitAnswerResult(correct, exercise.Answer(), exercise.Feedback()))
 	}
 
 	c.JSON(http.StatusOK, newSubmitAnswersResponse(results))

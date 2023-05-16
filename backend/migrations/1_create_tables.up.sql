@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS quiz(
     id UUID NOT NULL PRIMARY KEY,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    language_tag TEXT NOT NULL,
     "name" TEXT NOT NULL
 );
 
@@ -39,6 +40,7 @@ CREATE TABLE IF NOT EXISTS exercise(
     quiz_section_id UUID NOT NULL REFERENCES quiz_section (id),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    feedback TEXT,
     "type" TEXT NOT NULL,
     question TEXT,
     choices TEXT[],

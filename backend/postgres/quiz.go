@@ -11,6 +11,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"golang.org/x/text/language"
 )
 
 type QuizStorage struct {
@@ -167,10 +168,10 @@ func (s *QuizStorage) CreateQuiz(cmd quiz.CreateQuizCommand) (*quiz.Quiz, error)
 	defer tx.Rollback(context.Background())
 
 	quizEntity, err := mapToQuizEntity(tx.QueryRow(context.Background(), `
-		INSERT INTO quiz (id, name)
-		VALUES ($1, $2)
+		INSERT INTO quiz (id, name, language_tag)
+		VALUES ($1, $2, $3)
 		RETURNING *
-	`, id, cmd.Name))
+	`, id, cmd.Name, cmd.LanguageTag.String()))
 	if err != nil {
 		return nil, fmt.Errorf("failed to insert quiz: %w", err)
 	}
@@ -233,10 +234,10 @@ func insertMultipleChoiceExercise(
 	}
 
 	row := tx.QueryRow(context.Background(), `
-		INSERT INTO exercise (id, quiz_section_id, type, question, choices, answer) 
-		VALUES ($1, $2, $3, $4, $5, $6) 
+		INSERT INTO exercise (id, quiz_section_id, type, question, choices, answer, feedback) 
+		VALUES ($1, $2, $3, $4, $5, $6, $7) 
 		RETURNING *
-	`, id, quizSectionId, exercise.TypeMultipleChoice, cmd.Question, cmd.Choices, cmd.Answer)
+	`, id, quizSectionId, exercise.TypeMultipleChoice, cmd.Question, cmd.Choices, cmd.Answer, cmd.Feedback)
 
 	return mapToExerciseEntity(row)
 }
@@ -252,10 +253,10 @@ func insertFillInTheBlankExercise(
 	}
 
 	row := tx.QueryRow(context.Background(), `
-		INSERT INTO exercise (id, quiz_section_id, type, question, answer) 
-		VALUES ($1, $2, $3, $4, $5) 
+		INSERT INTO exercise (id, quiz_section_id, type, question, answer, feedback) 
+		VALUES ($1, $2, $3, $4, $5, $6) 
 		RETURNING *
-	`, id, quizSectionId, exercise.TypeFillInTheBlank, cmd.Question, cmd.Answer)
+	`, id, quizSectionId, exercise.TypeFillInTheBlank, cmd.Question, cmd.Answer, cmd.Feedback)
 
 	return mapToExerciseEntity(row)
 }
@@ -271,10 +272,10 @@ func insertSentenceCorrectionExercise(
 	}
 
 	row := tx.QueryRow(context.Background(), `
-		INSERT INTO exercise (id, quiz_section_id, type, sentence, corrected_sentence) 
-		VALUES ($1, $2, $3, $4, $5) 
+		INSERT INTO exercise (id, quiz_section_id, type, sentence, corrected_sentence, feedback) 
+		VALUES ($1, $2, $3, $4, $5, $6) 
 		RETURNING *
-	`, id, quizSectionId, exercise.TypeSentenceCorrection, cmd.Sentence, cmd.CorrectedSentence)
+	`, id, quizSectionId, exercise.TypeSentenceCorrection, cmd.Sentence, cmd.CorrectedSentence, cmd.Feedback)
 
 	return mapToExerciseEntity(row)
 }
@@ -285,6 +286,7 @@ func mapToQuizEntity(row pgx.Row) (*QuizEntity, error) {
 		&entity.ID,
 		&entity.CreatedAt,
 		&entity.UpdatedAt,
+		&entity.LanguageTag,
 		&entity.Name,
 	)
 	return &entity, err
@@ -309,6 +311,7 @@ func mapToExerciseEntity(row pgx.Row) (*ExerciseEntity, error) {
 		&entity.QuizSectionID,
 		&entity.CreatedAt,
 		&entity.UpdatedAt,
+		&entity.Feedback,
 		&entity.Type,
 		&entity.Question,
 		&entity.Choices,
@@ -343,6 +346,7 @@ func combineEntitiesIntoQuiz(
 		quizEntity.CreatedAt,
 		quizEntity.UpdatedAt,
 		quizEntity.Name,
+		language.MustParse(quizEntity.LanguageTag),
 		sections,
 	)
 
@@ -350,10 +354,11 @@ func combineEntitiesIntoQuiz(
 }
 
 type QuizEntity struct {
-	ID        uuid.UUID
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	Name      string
+	ID          uuid.UUID
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
+	Name        string
+	LanguageTag string
 }
 
 type QuizSectionEntity struct {
@@ -369,7 +374,9 @@ type ExerciseEntity struct {
 	QuizSectionID uuid.UUID
 	CreatedAt     time.Time
 	UpdatedAt     time.Time
-	Type          string
+	Feedback      *string
+
+	Type string
 
 	Question *string
 	Choices  *[]string
@@ -409,6 +416,7 @@ func mapToMultipleChoiceExercise(entity ExerciseEntity) *exercise.MultipleChoice
 		entity.ID.String(),
 		entity.CreatedAt,
 		entity.UpdatedAt,
+		entity.Feedback,
 		*entity.Question,
 		*entity.Choices,
 		*entity.Answer,
@@ -421,6 +429,7 @@ func mapToFillInTheBlankExercise(entity ExerciseEntity) *exercise.FillInTheBlank
 		entity.ID.String(),
 		entity.CreatedAt,
 		entity.UpdatedAt,
+		entity.Feedback,
 		*entity.Question,
 		*entity.Answer,
 	)
@@ -432,6 +441,7 @@ func mapToSentenceCorrectionExercise(entity ExerciseEntity) *exercise.SentenceCo
 		entity.ID.String(),
 		entity.CreatedAt,
 		entity.UpdatedAt,
+		entity.Feedback,
 		*entity.Sentence,
 		*entity.CorrectedSentence,
 	)

@@ -6,8 +6,8 @@ import (
 
 type Exercise interface {
 	CheckAnswer(answer any) bool
-	GetAnswer() any
-	GetType() string
+	Answer() any
+	Feedback() *string
 }
 
 type exerciseBase struct {
@@ -15,14 +15,20 @@ type exerciseBase struct {
 	Type      string
 	CreatedAt time.Time
 	UpdatedAt time.Time
+	feedback  *string
 }
 
-func newExerciseBase(id, exerciseType string, createdAt, updatedAt time.Time) exerciseBase {
+func (b *exerciseBase) Feedback() *string {
+	return b.feedback
+}
+
+func newExerciseBase(id, _type string, createdAt, updatedAt time.Time, feedback *string) exerciseBase {
 	return exerciseBase{
 		ID:        id,
-		Type:      exerciseType,
+		Type:      _type,
 		CreatedAt: createdAt,
 		UpdatedAt: updatedAt,
+		feedback:  feedback,
 	}
 }
 
@@ -30,70 +36,64 @@ type MultipleChoiceExercise struct {
 	exerciseBase
 	Question string
 	Choices  []string
-	Answer   string
+	answer   string
 }
 
 func NewMultipleChoiceExercise(
 	id string,
 	createdAt, updatedAt time.Time,
+	feedback *string,
 	question string,
 	choices []string,
 	answer string,
 ) MultipleChoiceExercise {
 	return MultipleChoiceExercise{
-		exerciseBase: newExerciseBase(id, TypeMultipleChoice, createdAt, updatedAt),
+		exerciseBase: newExerciseBase(id, TypeMultipleChoice, createdAt, updatedAt, feedback),
 		Question:     question,
 		Choices:      choices,
-		Answer:       answer,
+		answer:       answer,
 	}
 }
 
 func (e *MultipleChoiceExercise) CheckAnswer(answer any) bool {
 	if answer, ok := answer.(string); ok {
-		return e.Answer == answer
+		return e.answer == answer
 	}
 	return false
 }
 
-func (e *MultipleChoiceExercise) GetAnswer() any {
-	return e.Answer
-}
-
-func (e *MultipleChoiceExercise) GetType() string {
-	return e.Type
+func (e *MultipleChoiceExercise) Answer() any {
+	return e.answer
 }
 
 type FillInTheBlankExercise struct {
 	exerciseBase
 	Question string // e.g. "This is a ______ truck."
-	Answer   string // e.g. "fire"
+	answer   string // e.g. "fire"
 }
 
 func NewFillInTheBlankExercise(
 	id string,
 	createdAt, updatedAt time.Time,
+	feedback *string,
 	question, answer string,
 ) FillInTheBlankExercise {
 	return FillInTheBlankExercise{
-		exerciseBase: newExerciseBase(id, TypeFillInTheBlank, createdAt, updatedAt),
+		exerciseBase: newExerciseBase(id, TypeFillInTheBlank, createdAt, updatedAt, feedback),
 		Question:     question,
-		Answer:       answer,
+		answer:       answer,
 	}
 }
 
 func (e *FillInTheBlankExercise) CheckAnswer(answer any) bool {
 	if answer, ok := answer.(string); ok {
-		return e.Answer == answer
+		return e.answer == answer
 	}
 	return false
 }
 
-func (e *FillInTheBlankExercise) GetAnswer() any {
-	return e.Answer
-}
-
-func (e *FillInTheBlankExercise) GetType() string {
-	return e.Type
+func (e *FillInTheBlankExercise) Answer() any {
+	return e.answer
 }
 
 type SentenceCorrectionExercise struct {
@@ -105,10 +105,11 @@ type SentenceCorrectionExercise struct {
 func NewSentenceCorrectionExercise(
 	id string,
 	createdAt, updatedAt time.Time,
+	feedback *string,
 	sentence, correctedSentence string,
 ) SentenceCorrectionExercise {
 	return SentenceCorrectionExercise{
-		exerciseBase:      newExerciseBase(id, TypeSentenceCorrection, createdAt, updatedAt),
+		exerciseBase:      newExerciseBase(id, TypeSentenceCorrection, createdAt, updatedAt, feedback),
 		Sentence:          sentence,
 		CorrectedSentence: correctedSentence,
 	}
@@ -121,10 +122,6 @@ func (e *SentenceCorrectionExercise) CheckAnswer(answer any) bool {
 	return false
 }
 
-func (e *SentenceCorrectionExercise) GetAnswer() any {
+func (e *SentenceCorrectionExercise) Answer() any {
 	return e.CorrectedSentence
-}
-
-func (e *SentenceCorrectionExercise) GetType() string {
-	return e.Type
 }

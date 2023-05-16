@@ -14,12 +14,14 @@ type CreateMultipleChoiceExerciseCommand struct {
 	Question string
 	Choices  []string
 	Answer   string
+	Feedback *string
 }
 
 func NewCreateMultipleChoiceExerciseCommand(
 	question string,
 	choices []string,
 	answer string,
+	feedback *string,
 ) (*CreateMultipleChoiceExerciseCommand, error) {
 	if len(choices) != 4 {
 		return nil, fmt.Errorf("expected 4 choices, found: %d", len(choices))
@@ -32,15 +34,20 @@ func NewCreateMultipleChoiceExerciseCommand(
 		Question: question,
 		Choices:  choices,
 		Answer:   answer,
+		Feedback: feedback,
 	}, nil
 }
 
 type CreateFillInTheBlankExerciseCommand struct {
 	Question string // e.g. "This is a ______ truck."
 	Answer   string // e.g. "fire"
+	Feedback *string
 }
 
-func NewCreateFillInTheBlankExerciseCommand(question, answer string) (*CreateFillInTheBlankExerciseCommand, error) {
+func NewCreateFillInTheBlankExerciseCommand(
+	question, answer string,
+	feedback *string,
+) (*CreateFillInTheBlankExerciseCommand, error) {
 	blanks := blankRegex.FindAllStringSubmatch(question, -1)
 	if len(blanks) == 0 {
 		return nil, errors.New("no blank found in question")
@@ -52,16 +59,19 @@ func NewCreateFillInTheBlankExerciseCommand(question, answer string) (*CreateFil
 	return &CreateFillInTheBlankExerciseCommand{
 		Question: question,
 		Answer:   answer,
+		Feedback: feedback,
 	}, nil
 }
 
 type CreateSentenceCorrectionExerciseCommand struct {
 	Sentence          string
 	CorrectedSentence string
+	Feedback          *string
 }
 
 func NewCreateSentenceCorrectionExerciseCommand(
 	sentence, correctedSentence string,
+	feedback *string,
 ) (*CreateSentenceCorrectionExerciseCommand, error) {
 	if sentence == correctedSentence {
 		return nil, errors.New("sentence and correctedSentence are the same")
@@ -70,5 +80,6 @@ func NewCreateSentenceCorrectionExerciseCommand(
 	return &CreateSentenceCorrectionExerciseCommand{
 		Sentence:          sentence,
 		CorrectedSentence: correctedSentence,
+		Feedback:          feedback,
 	}, nil
 }
