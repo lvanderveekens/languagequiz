@@ -17,6 +17,7 @@ const initialQuizFormValues: QuizFormValues = {
 
 export default function CreateQuizPage() {
   const [formValues, setFormValues] = useState<QuizFormValues>(initialQuizFormValues)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const handleNameChange = (event: any) => {
     setFormValues({ ...formValues, name: event.target.value });
@@ -25,6 +26,7 @@ export default function CreateQuizPage() {
   const handleSubmit = async (event: any) => {
     event.preventDefault();
     console.log(`Submitting form with values: ${JSON.stringify(formValues)}`)
+    setErrorMessage(null)
 
     try {
       const req = mapToRequest(formValues);
@@ -35,7 +37,11 @@ export default function CreateQuizPage() {
         body: JSON.stringify(req),
         headers: { "Content-Type": "application/json" },
       });
-      console.log(res)
+
+      if (res.status == 400) {
+        const responseBody = await res.json();
+        setErrorMessage(responseBody.error);
+      }
     } catch (error) {
       console.error(error);
     }
@@ -123,6 +129,7 @@ export default function CreateQuizPage() {
           </button>
         </div>
       </form>
+      {errorMessage && <div>Error: {errorMessage}</div>}
     </div>
   );
 }
