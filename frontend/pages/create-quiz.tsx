@@ -1,6 +1,7 @@
 import { CreateQuizRequest, ExerciseType } from "@/components/models";
 import { useState } from "react";
 import { v4 as uuidv4 } from 'uuid';
+import { useRouter } from 'next/router';
 
 const initialQuizFormValues: QuizFormValues = {
   sections: [
@@ -18,6 +19,7 @@ const initialQuizFormValues: QuizFormValues = {
 export default function CreateQuizPage() {
   const [formValues, setFormValues] = useState<QuizFormValues>(initialQuizFormValues)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const router = useRouter();
 
   const handleNameChange = (event: any) => {
     setFormValues({ ...formValues, name: event.target.value });
@@ -25,8 +27,8 @@ export default function CreateQuizPage() {
 
   const handleSubmit = async (event: any) => {
     event.preventDefault();
-    console.log(`Submitting form with values: ${JSON.stringify(formValues)}`)
-    setErrorMessage(null)
+    console.log(`Submitting form with values: ${JSON.stringify(formValues)}`);
+    setErrorMessage(null);
 
     try {
       const req = mapToRequest(formValues);
@@ -38,7 +40,9 @@ export default function CreateQuizPage() {
         headers: { "Content-Type": "application/json" },
       });
 
-      if (res.status == 400) {
+      if (res.status == 201) {
+        router.push("/");
+      } else {
         const responseBody = await res.json();
         setErrorMessage(responseBody.error);
       }
