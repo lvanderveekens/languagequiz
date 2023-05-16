@@ -149,9 +149,7 @@ const ExerciseInput: React.FC<ExerciseInputProps> = ({
   onChange,
 }) => {
 
-  // const [exerciseType, setExerciseType] = useState<ExerciseType | undefined>()
-
-  const handleSelectChange = (event: any) => {
+  const handleTypeChange = (event: any) => {
     onChange({...value, type: event.target.value})
   };
 
@@ -165,7 +163,7 @@ const ExerciseInput: React.FC<ExerciseInputProps> = ({
             id="choice"
             name="choice"
             value={value.type}
-            onChange={handleSelectChange}
+            onChange={handleTypeChange}
           >
             <option value="">Select an option</option>
             {Object.values(ExerciseType)
@@ -186,15 +184,41 @@ const ExerciseInput: React.FC<ExerciseInputProps> = ({
           question={value.question}
           choices={value.choices}
           answer={value.answer}
-          onQuestionChange={(question: string) => onChange({...value, question: question})}
-          onChoicesChange={(choices: string[]) => onChange({...value, choices: choices})}
-          onAnswerChange={(answer: string) => onChange({...value, answer: answer})}
+          onQuestionChange={(question: string) =>
+            onChange({ ...value, question: question })
+          }
+          onChoicesChange={(choices: string[]) =>
+            onChange({ ...value, choices: choices })
+          }
+          onAnswerChange={(answer: string) =>
+            onChange({ ...value, answer: answer })
+          }
         />
       );
     case ExerciseType.FillInTheBlank:
-      return <FillInTheBlankExerciseInput />
+      return (
+        <FillInTheBlankExerciseInput
+          question={value.question}
+          answer={value.answer}
+          onQuestionChange={(question: string) =>
+            onChange({ ...value, question: question })
+          }
+          onAnswerChange={(answer: string) =>
+            onChange({ ...value, answer: answer })
+          }
+        />
+      );
     case ExerciseType.SentenceCorrection:
-      return <SentenceCorrectionExerciseInput />
+      return <SentenceCorrectionExerciseInput 
+          sentence={value.sentence}
+          correctedSentence={value.correctedSentence}
+          onSentenceChange={(sentence: string) =>
+            onChange({ ...value, sentence: sentence})
+          }
+          onCorrectedSentenceChange={(correctedSentence: string) =>
+            onChange({ ...value, correctedSentence: correctedSentence })
+          }
+      />
     default:
       return <p>Unknown exercise type</p>
   }
@@ -218,10 +242,6 @@ const MultipleChoiceExerciseInput: React.FC<MultipleChoiceExerciseInputProps> = 
   onAnswerChange,
 }) => {
 
-  // TODO: 1 question
-  // TODO: 4 choices
-  // TODO: 1 answer
-
   const handleChoiceChange = (index: number) => (event: any) => {
     const { value } = event.target;
     const updatedChoices = [...(choices ?? new Array(4))]
@@ -231,7 +251,7 @@ const MultipleChoiceExerciseInput: React.FC<MultipleChoiceExerciseInputProps> = 
 
   return (
     <div className="border border-black">
-      Multiple Choice Exercise!!
+      Multiple Choice Exercise
       <div>
         <label>
           <span className="mr-3">Question</span>
@@ -256,6 +276,39 @@ const MultipleChoiceExerciseInput: React.FC<MultipleChoiceExerciseInputProps> = 
       </div>
       <div>
         <label>
+          <span className="mr-3">Choice 2</span>
+          <input
+            className="border border-black"
+            type="text"
+            value={choices?.[1] ?? ""}
+            onChange={handleChoiceChange(1)}
+          />
+        </label>
+      </div>
+      <div>
+        <label>
+          <span className="mr-3">Choice 3</span>
+          <input
+            className="border border-black"
+            type="text"
+            value={choices?.[2] ?? ""}
+            onChange={handleChoiceChange(2)}
+          />
+        </label>
+      </div>
+      <div>
+        <label>
+          <span className="mr-3">Choice 4</span>
+          <input
+            className="border border-black"
+            type="text"
+            value={choices?.[3] ?? ""}
+            onChange={handleChoiceChange(3)}
+          />
+        </label>
+      </div>
+      <div>
+        <label>
           <span className="mr-3">Answer</span>
           <input
             className="border border-black"
@@ -270,27 +323,87 @@ const MultipleChoiceExerciseInput: React.FC<MultipleChoiceExerciseInputProps> = 
 }
 
 type FillInTheBlankExerciseInputProps = {
+  question?: string
+  answer?: string
+  onQuestionChange: (question: string) => void
+  onAnswerChange: (answer: string) => void
 };
 
 const FillInTheBlankExerciseInput: React.FC<FillInTheBlankExerciseInputProps> = ({
+  question,
+  answer,
+  onQuestionChange,
+  onAnswerChange,
 }) => {
 
   return (
     <div className="border border-black">
       Fill In The Blank Exercise
+      <div>
+        <label>
+          <span className="mr-3">Question</span>
+          <input
+            className="border border-black"
+            type="text"
+            value={question ?? ""}
+            onChange={(e) => onQuestionChange(e.target.value)}
+          />
+        </label>
+      </div>
+      <div>
+        <label>
+          <span className="mr-3">Answer</span>
+          <input
+            className="border border-black"
+            type="text"
+            value={answer ?? ""}
+            onChange={(e) => onAnswerChange(e.target.value)}
+          />
+        </label>
+      </div>
     </div>
   );
 }
 
 type SentenceCorrectionExerciseInputProps = {
+  sentence?: string
+  correctedSentence?: string
+  onSentenceChange: (sentence: string) => void
+  onCorrectedSentenceChange: (correctedSentence: string) => void
 };
 
 const SentenceCorrectionExerciseInput: React.FC<SentenceCorrectionExerciseInputProps> = ({
+  sentence,
+  correctedSentence,
+  onSentenceChange,
+  onCorrectedSentenceChange,
 }) => {
 
   return (
     <div className="border border-black">
       Sentence Correction Exercise
+      <div>
+        <label>
+          <span className="mr-3">Sentence</span>
+          <input
+            className="border border-black"
+            type="text"
+            value={sentence ?? ""}
+            onChange={(e) => onSentenceChange(e.target.value)}
+          />
+        </label>
+      </div>
+      <div>
+        <label>
+          <span className="mr-3">Corrected sentence</span>
+          <input
+            className="border border-black"
+            type="text"
+            value={correctedSentence ?? ""}
+            onChange={(e) => onCorrectedSentenceChange(e.target.value)}
+          />
+        </label>
+      </div>
     </div>
   );
 }
@@ -312,6 +425,7 @@ interface ExerciseFormValues {
   question?: string;
   choices?: string[];
   sentence?: string;
+  correctedSentence?: string;
   answer?: string
 }
 
