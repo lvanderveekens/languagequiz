@@ -69,6 +69,7 @@ export default function CreateQuizPage() {
           sentence: exercise.sentence,
           correctedSentence: exercise.correctedSentence,
           answer: exercise.answer,
+          feedback: exercise.feedback,
         })),
       })),
     };
@@ -267,6 +268,7 @@ const ExerciseInput: React.FC<ExerciseInputProps> = ({
           question={value.question}
           choices={value.choices}
           answer={value.answer}
+          feedback={value.feedback}
           onQuestionChange={(question: string) =>
             onChange({ ...value, question: question })
           }
@@ -276,6 +278,9 @@ const ExerciseInput: React.FC<ExerciseInputProps> = ({
           onAnswerChange={(answer: string) =>
             onChange({ ...value, answer: answer })
           }
+          onFeedbackChange={(feedback: string) =>
+            onChange({ ...value, feedback: feedback })
+          }
         />
       );
     case ExerciseType.FillInTheBlank:
@@ -283,11 +288,15 @@ const ExerciseInput: React.FC<ExerciseInputProps> = ({
         <FillInTheBlankExerciseInput
           question={value.question}
           answer={value.answer}
+          feedback={value.feedback}
           onQuestionChange={(question: string) =>
             onChange({ ...value, question: question })
           }
           onAnswerChange={(answer: string) =>
             onChange({ ...value, answer: answer })
+          }
+          onFeedbackChange={(feedback: string) =>
+            onChange({ ...value, feedback: feedback })
           }
         />
       );
@@ -295,11 +304,15 @@ const ExerciseInput: React.FC<ExerciseInputProps> = ({
       return <SentenceCorrectionExerciseInput 
           sentence={value.sentence}
           correctedSentence={value.correctedSentence}
+          feedback={value.feedback}
           onSentenceChange={(sentence: string) =>
             onChange({ ...value, sentence: sentence})
           }
           onCorrectedSentenceChange={(correctedSentence: string) =>
             onChange({ ...value, correctedSentence: correctedSentence })
+          }
+          onFeedbackChange={(feedback: string) =>
+            onChange({ ...value, feedback: feedback })
           }
       />
     default:
@@ -308,21 +321,25 @@ const ExerciseInput: React.FC<ExerciseInputProps> = ({
 }
 
 type MultipleChoiceExerciseInputProps = {
-  question?: string
-  choices?: string[]
-  answer?: string
-  onQuestionChange: (question: string) => void
-  onChoicesChange: (choices: string[]) => void
-  onAnswerChange: (answer: string) => void
+  question?: string;
+  choices?: string[];
+  answer?: string;
+  feedback?: string;
+  onQuestionChange: (question: string) => void;
+  onChoicesChange: (choices: string[]) => void;
+  onAnswerChange: (answer: string) => void;
+  onFeedbackChange: (feedback: string) => void;
 };
 
 const MultipleChoiceExerciseInput: React.FC<MultipleChoiceExerciseInputProps> = ({
   question,
   choices,
   answer,
+  feedback,
   onQuestionChange,
   onChoicesChange,
   onAnswerChange,
+  onFeedbackChange,
 }) => {
 
   const handleChoiceChange = (index: number) => (event: any) => {
@@ -405,6 +422,17 @@ const MultipleChoiceExerciseInput: React.FC<MultipleChoiceExerciseInputProps> = 
           />
         </label>
       </div>
+      <div>
+        <label>
+          <span className="mr-3">Feedback</span>
+          <input
+            className="border border-black"
+            type="text"
+            value={feedback ?? ""}
+            onChange={(e) => onFeedbackChange(e.target.value)}
+          />
+        </label>
+      </div>
     </div>
   );
 }
@@ -412,15 +440,19 @@ const MultipleChoiceExerciseInput: React.FC<MultipleChoiceExerciseInputProps> = 
 type FillInTheBlankExerciseInputProps = {
   question?: string
   answer?: string
+  feedback?: string
   onQuestionChange: (question: string) => void
   onAnswerChange: (answer: string) => void
+  onFeedbackChange: (feedback: string) => void
 };
 
 const FillInTheBlankExerciseInput: React.FC<FillInTheBlankExerciseInputProps> = ({
+  feedback,
   question,
   answer,
   onQuestionChange,
   onAnswerChange,
+  onFeedbackChange,
 }) => {
 
   return (
@@ -450,22 +482,37 @@ const FillInTheBlankExerciseInput: React.FC<FillInTheBlankExerciseInputProps> = 
           />
         </label>
       </div>
+      <div>
+        <label>
+          <span className="mr-3">Feedback</span>
+          <input
+            className="border border-black"
+            type="text"
+            value={feedback ?? ""}
+            onChange={(e) => onFeedbackChange(e.target.value)}
+          />
+        </label>
+      </div>
     </div>
   );
 }
 
 type SentenceCorrectionExerciseInputProps = {
-  sentence?: string
-  correctedSentence?: string
-  onSentenceChange: (sentence: string) => void
-  onCorrectedSentenceChange: (correctedSentence: string) => void
+  sentence?: string;
+  correctedSentence?: string;
+  feedback?: string;
+  onSentenceChange: (sentence: string) => void;
+  onCorrectedSentenceChange: (correctedSentence: string) => void;
+  onFeedbackChange: (feedback: string) => void;
 };
 
 const SentenceCorrectionExerciseInput: React.FC<SentenceCorrectionExerciseInputProps> = ({
+  feedback,
   sentence,
   correctedSentence,
   onSentenceChange,
   onCorrectedSentenceChange,
+  onFeedbackChange,
 }) => {
 
   return (
@@ -493,6 +540,17 @@ const SentenceCorrectionExerciseInput: React.FC<SentenceCorrectionExerciseInputP
           />
         </label>
       </div>
+      <div>
+        <label>
+          <span className="mr-3">Feedback</span>
+          <input
+            className="border border-black"
+            type="text"
+            value={feedback ?? ""}
+            onChange={(e) => onFeedbackChange(e.target.value)}
+          />
+        </label>
+      </div>
     </div>
   );
 }
@@ -517,4 +575,5 @@ interface ExerciseFormValues {
   sentence?: string;
   correctedSentence?: string;
   answer?: string
+  feedback?: string
 }

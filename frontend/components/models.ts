@@ -35,21 +35,22 @@ export interface SubmitAnswerResult {
 export interface CreateQuizRequest {
   languageTag: string;
   name: string;
-  sections: CreateQuizSectionDto[];
+  sections: CreateQuizSectionRequest[];
 }
 
-export interface CreateQuizSectionDto {
+export interface CreateQuizSectionRequest {
   name: string;
-  exercises: CreateExerciseDto[];
+  exercises: CreateExerciseRequest[];
 }
 
-export interface CreateExerciseDto {
+export interface CreateExerciseRequest {
   type: string;
   question?: string;
   choices?: string[];
   sentence?: string;
   correctedSentence?: string;
   answer?: string;
+  feedback?: string;
 }
 
 export enum ExerciseType {

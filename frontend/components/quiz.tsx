@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ChangeEvent } from 'react';
-import { ExerciseDto, QuizSectionDto, SubmitAnswersRequest, SubmitAnswersResponse } from './models';
+import { ExerciseDto, QuizSectionDto, SubmitAnswerResult, SubmitAnswersRequest, SubmitAnswersResponse } from './models';
 import MultipleChoiceExercise from './multiple-choice-exercise';
 import FillInTheBlankExercise from './fill-in-the-blank-exercise';
 import SentenceCorrectionExercise from './sentence-correction-exercise';
@@ -21,7 +21,7 @@ const Quiz: React.FC<Props> = ({
 }) => {
   const [exercises, setExercises] = useState<ExerciseDto[]>(sections.flatMap(section => section.exercises));
   const [answers, setAnswers] = useState<any[]>(Array.from({ length: exercises.length }, () => null));
-  const [results, setResults] = useState<boolean[]>();
+  const [results, setResults] = useState<SubmitAnswerResult[]>();
 
   const handleSubmit = async (event: any) => {
     event.preventDefault();
@@ -41,7 +41,7 @@ const Quiz: React.FC<Props> = ({
       });
 
       const resBody = await res.json() as SubmitAnswersResponse
-      setResults(resBody.results.map((result) => result.correct))
+      setResults(resBody.results)
     } catch (error) {
       console.error(error);
     }
