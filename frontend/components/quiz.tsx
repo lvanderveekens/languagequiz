@@ -4,15 +4,18 @@ import { ExerciseDto, QuizSectionDto, SubmitAnswersRequest, SubmitAnswersRespons
 import MultipleChoiceExercise from './multiple-choice-exercise';
 import FillInTheBlankExercise from './fill-in-the-blank-exercise';
 import SentenceCorrectionExercise from './sentence-correction-exercise';
+import { getLanguageByTag } from './languages';
 
 type Props = {
   id: string
+  languageTag: string
   name: string
   sections: QuizSectionDto[]
 };
 
 const Quiz: React.FC<Props> = ({
   id,
+  languageTag,
   name,
   sections,
 }) => {
@@ -62,6 +65,7 @@ const Quiz: React.FC<Props> = ({
   return (
     <div className="border border-black">
       <div className="font-bold">Quiz: {name}</div>
+      <div>Language: {getLanguageByTag(languageTag)?.name}</div>
       <div>
         <form onSubmit={handleSubmit}>
           {sections.map((section: QuizSectionDto) => (

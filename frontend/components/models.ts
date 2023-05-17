@@ -1,6 +1,7 @@
 
 export interface QuizDto {
   id: string
+  languageTag: string
   name: string
   sections: QuizSectionDto[]
 }
@@ -32,13 +33,14 @@ export interface SubmitAnswerResult {
 }
 
 export interface CreateQuizRequest {
-    name: string
-    sections: CreateQuizSectionDto[]
+  languageTag: string;
+  name: string;
+  sections: CreateQuizSectionDto[];
 }
 
 export interface CreateQuizSectionDto {
-    name: string
-    exercises: CreateExerciseDto[]
+  name: string;
+  exercises: CreateExerciseDto[];
 }
 
 export interface CreateExerciseDto {
@@ -47,7 +49,7 @@ export interface CreateExerciseDto {
   choices?: string[];
   sentence?: string;
   correctedSentence?: string;
-  answer?: string
+  answer?: string;
 }
 
 export enum ExerciseType {

@@ -2,6 +2,7 @@ import { CreateQuizRequest, ExerciseType } from "@/components/models";
 import { useState } from "react";
 import { v4 as uuidv4 } from 'uuid';
 import { useRouter } from 'next/router';
+import languages from "@/components/languages";
 
 const initialQuizFormValues: QuizFormValues = {
   sections: [
@@ -23,6 +24,10 @@ export default function CreateQuizPage() {
 
   const handleNameChange = (event: any) => {
     setFormValues({ ...formValues, name: event.target.value });
+  };
+
+  const handleLanguageChange = (event: any) => {
+    setFormValues({ ...formValues, languageTag: event.target.value });
   };
 
   const handleSubmit = async (event: any) => {
@@ -53,6 +58,7 @@ export default function CreateQuizPage() {
 
   const mapToRequest = (formValues: QuizFormValues) => {
     const req: CreateQuizRequest = {
+      languageTag: formValues.languageTag!,
       name: formValues.name!,
       sections: formValues.sections!.map((section) => ({
         name: section.name!,
@@ -94,6 +100,24 @@ export default function CreateQuizPage() {
     <div className="container mx-auto">
       Create quiz page
       <form onSubmit={handleSubmit}>
+        <div>
+          <label htmlFor="language">Language:</label>
+          <select
+            id="language"
+            name="language"
+            value={formValues.languageTag}
+            onChange={handleLanguageChange}
+            required
+          >
+            <option value="">Select an option</option>
+            {languages
+              .map((language) => (
+                <option key={language.languageTag} value={language.languageTag}>
+                  {language.name}
+                </option>
+              ))}
+          </select>
+        </div>
         <div>
           <label>
             <span className="mr-3">Name</span>
@@ -216,7 +240,7 @@ const ExerciseInput: React.FC<ExerciseInputProps> = ({
       <div className="border border-black">
         Exercise
         <div>
-          <label htmlFor="choice">Choose an exercise type:</label>
+          <label htmlFor="choice">Exercise type:</label>
           <select
             id="choice"
             name="choice"
@@ -474,6 +498,7 @@ const SentenceCorrectionExerciseInput: React.FC<SentenceCorrectionExerciseInputP
 }
 
 interface QuizFormValues {
+    languageTag?: string
     name?: string
     sections?: QuizSectionFormValues[]
 }

@@ -32,6 +32,7 @@ export default function QuizPage() {
         <Quiz
           key={quiz.id}
           id={quiz.id}
+          languageTag={quiz.languageTag}
           name={quiz.name}
           sections={quiz.sections}
         />
