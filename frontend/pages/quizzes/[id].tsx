@@ -27,7 +27,6 @@ export default function QuizPage() {
 
   return (
     <div className="container mx-auto">
-      QUIZ PAGE: {quiz?.id}
       {quiz && (
         <Quiz
           key={quiz.id}

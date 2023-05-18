@@ -41,7 +41,7 @@ export default function HomePage() {
               </div>
               <div>
                 <button
-                  className="text-black font-bold text-xl bg-white border-2 border-white px-4 py-2 rounded-lg px-3 mb-4"
+                  className="text-[#003259] font-bold text-xl bg-white border-2 border-white px-4 py-2 rounded-lg px-3 mb-4"
                   onClick={() => router.push("#latest-quizzes")}
                 >
                   Take a quiz

@@ -1,12 +1,13 @@
 import React, { ChangeEvent } from 'react';
 
 type Props = {
+  index: number,
   question: string
   answer?: string
   setAnswer: (answer: string) => void
 };
 
-const FillInTheBlankExercise: React.FC<Props> = ({ question, answer, setAnswer }) => {
+const FillInTheBlankExercise: React.FC<Props> = ({ index, question, answer, setAnswer }) => {
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     setAnswer(event.target.value);
@@ -17,10 +18,9 @@ const FillInTheBlankExercise: React.FC<Props> = ({ question, answer, setAnswer }
   const after = parts[1]; 
 
   return (
-    <div className="border border-black">
-      <div className='font-bold'>Fill in the blank</div>
+    <div className="">
       <div>
-        {before}
+        {index + 1}. {before}
         <input
           className="border border-black"
           type="text"

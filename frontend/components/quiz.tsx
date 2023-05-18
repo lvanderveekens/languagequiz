@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { ChangeEvent } from 'react';
+import FillInTheBlankExercise from './fill-in-the-blank-exercise';
+import { getLanguageByTag } from './languages';
 import { ExerciseDto, QuizSectionDto, SubmitAnswerResult, SubmitAnswersRequest, SubmitAnswersResponse } from './models';
 import MultipleChoiceExercise from './multiple-choice-exercise';
-import FillInTheBlankExercise from './fill-in-the-blank-exercise';
 import SentenceCorrectionExercise from './sentence-correction-exercise';
-import { getLanguageByTag } from './languages';
+import "/node_modules/flag-icons/css/flag-icons.min.css";
 
 type Props = {
   id: string
@@ -63,56 +63,78 @@ const Quiz: React.FC<Props> = ({
   let exerciseIndex = -1;
 
   return (
-    <div className="border border-black">
-      <div className="font-bold">Quiz: {name}</div>
-      <div>Language: {getLanguageByTag(languageTag)?.name}</div>
+    <div className="">
+      <div className="text-2xl font-bold mb-4">
+        <span className="mr-2">{name}</span>
+        <span
+          className={`fi fi-${getLanguageByTag(languageTag)?.countryCode}`}
+        />
+      </div>
+
       <div>
         <form onSubmit={handleSubmit}>
-          {sections.map((section: QuizSectionDto) => (
-            <div key={section.name}>
-              <div className="font-bold">Section: {section.name}</div>
+          {sections.map((section: QuizSectionDto, sectionIndex) => (
+            <div key={section.name} className="mb-4">
+              <div className="text-xl font-bold mb-4">
+                {String.fromCharCode(65 + sectionIndex)}. {section.name}
+              </div>
               <div>
                 {section.exercises.length > 0 &&
                   section.exercises.map((exercise, _) => {
-                  exerciseIndex++;
+                    exerciseIndex++;
+                    let exerciseComponent;
+
                     switch (exercise.type) {
                       case "multipleChoice":
-                        return (
+                        exerciseComponent = (
                           <MultipleChoiceExercise
                             key={exercise.question!}
+                            index={exerciseIndex}
                             question={exercise.question!}
                             choices={exercise.choices!}
                             answer={answers[exerciseIndex]}
                             setAnswer={setAnswer(exerciseIndex)}
                           />
                         );
+                        break;
                       case "fillInTheBlank":
-                        return (
+                        exerciseComponent = (
                           <FillInTheBlankExercise
                             key={exercise.question!}
+                            index={exerciseIndex}
                             question={exercise.question!}
                             answer={answers[exerciseIndex]}
                             setAnswer={setAnswer(exerciseIndex)}
                           />
                         );
+                        break;
                       case "sentenceCorrection":
-                        return (
+                        exerciseComponent = (
                           <SentenceCorrectionExercise
                             key={exercise.sentence!}
+                            index={exerciseIndex}
                             sentence={exercise.sentence!}
                             answer={answers[exerciseIndex]}
                             setAnswer={setAnswer(exerciseIndex)}
                           />
                         );
+                        break;
                       default:
-                        return <p>Unexpected exercise type: {exercise.type}</p>;
+                        exerciseComponent = (
+                          <p>Unexpected exercise type: {exercise.type}</p>
+                        );
                     }
-                  })
-                  }
+                    return <div className="mb-4">{exerciseComponent}</div>;
+                  })}
               </div>
             </div>
           ))}
-          <button type="submit">Submit</button>
+          <button
+            type="submit"
+            className="text-xl font-bold px-4 py-2 border-2 border-black rounded-lg px-3"
+          >
+            Submit
+          </button>
         </form>
         {results && <p>{JSON.stringify(results)}</p>}
       </div>
