@@ -6,6 +6,10 @@ export interface QuizDto {
   sections: QuizSectionDto[]
 }
 
+export function getNumberOfExercises(quiz: QuizDto): number {
+  return quiz.sections.flatMap((section) => section.exercises).length;
+}
+
 export interface QuizSectionDto {
   name: string
   exercises: ExerciseDto[]
