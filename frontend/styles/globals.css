@@ -2,9 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-    background-image: url('/background.svg');
+#hero {
+    background-image: url('/hero.svg');
     background-size: cover;
     background-repeat: no-repeat;
-    background-attachment: fixed;
+    background-position: center;
 }
