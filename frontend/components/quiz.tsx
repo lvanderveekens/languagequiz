@@ -64,17 +64,17 @@ const Quiz: React.FC<Props> = ({
 
   return (
     <div className="">
-      <div className="text-2xl font-bold mb-4">
+      <div className="text-2xl font-bold mb-8">
         <span className="mr-2">{name}</span>
-        <span
+        {/* <span
           className={`fi fi-${getLanguageByTag(languageTag)?.countryCode}`}
-        />
+        /> */}
       </div>
 
       <div>
         <form onSubmit={handleSubmit}>
           {sections.map((section: QuizSectionDto, sectionIndex) => (
-            <div key={section.name} className="mb-4">
+            <div key={section.name} className="mb-8">
               <div className="text-xl font-bold mb-4">
                 {String.fromCharCode(65 + sectionIndex)}. {section.name}
               </div>
@@ -131,7 +131,7 @@ const Quiz: React.FC<Props> = ({
           ))}
           <button
             type="submit"
-            className="text-xl font-bold px-4 py-2 border-2 border-black rounded-lg px-3"
+            className="text-xl text-white bg-[#003259] font-bold px-4 py-2 border-2 border-[#003259] rounded-lg px-3"
           >
             Submit
           </button>

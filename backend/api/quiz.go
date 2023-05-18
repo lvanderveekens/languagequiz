@@ -116,7 +116,7 @@ func (r *createQuizRequest) toCommand() (*quiz.CreateQuizCommand, error) {
 		return nil, NewError(http.StatusBadRequest, err.Error())
 	}
 
-	createSectionCommands := make([]quiz.CreateQuizSectionCommand, 0)
+	createSectionCommands := make([]quiz.CreateSectionCommand, 0)
 	for _, createSectionRequest := range r.Sections {
 		createSectionCommand, err := createSectionRequest.toCommand()
 		if err != nil {
@@ -186,8 +186,8 @@ func (r *createQuizSectionRequest) validate() error {
 	return nil
 }
 
-func (r *createQuizSectionRequest) toCommand() (*quiz.CreateQuizSectionCommand, error) {
-	createExerciseCommands := make([]any, 0)
+func (r *createQuizSectionRequest) toCommand() (*quiz.CreateSectionCommand, error) {
+	createExerciseCommands := make([]exercise.CreateExerciseCommand, 0)
 	for _, createExerciseRequestRaw := range r.Exercises {
 		var createExerciseRequestJson map[string]any
 		if err := json.Unmarshal(createExerciseRequestRaw, &createExerciseRequestJson); err != nil {
@@ -206,7 +206,7 @@ func (r *createQuizSectionRequest) toCommand() (*quiz.CreateQuizSectionCommand, 
 				return nil, NewError(http.StatusBadRequest, err.Error())
 			}
 
-			createExerciseCommands = append(createExerciseCommands, *createExerciseCommand)
+			createExerciseCommands = append(createExerciseCommands, createExerciseCommand)
 		case exercise.TypeFillInTheBlank:
 			var createExerciseRequest createFillInTheBlankExerciseRequest
 			if err := json.Unmarshal(createExerciseRequestRaw, &createExerciseRequest); err != nil {
@@ -218,7 +218,7 @@ func (r *createQuizSectionRequest) toCommand() (*quiz.CreateQuizSectionCommand, 
 				return nil, NewError(http.StatusBadRequest, err.Error())
 			}
 
-			createExerciseCommands = append(createExerciseCommands, *createExerciseCommand)
+			createExerciseCommands = append(createExerciseCommands, createExerciseCommand)
 		case exercise.TypeSentenceCorrection:
 			var createExerciseRequest createSentenceCorrectionExerciseRequest
 			if err := json.Unmarshal(createExerciseRequestRaw, &createExerciseRequest); err != nil {
@@ -230,16 +230,17 @@ func (r *createQuizSectionRequest) toCommand() (*quiz.CreateQuizSectionCommand, 
 				return nil, NewError(http.StatusBadRequest, err.Error())
 			}
 
-			createExerciseCommands = append(createExerciseCommands, *createExerciseCommand)
+			createExerciseCommands = append(createExerciseCommands, createExerciseCommand)
 		default:
 			return nil, NewError(http.StatusBadRequest, fmt.Sprintf("unsupported exercise type: %v", createExerciseRequestJson["type"]))
 		}
 	}
 
-	return &quiz.CreateQuizSectionCommand{
-		Name:      r.Name,
-		Exercises: createExerciseCommands,
-	}, nil
+	createSectionCommand, err := quiz.NewCreateSectionCommand(r.Name, createExerciseCommands)
+	if err != nil {
+		return nil, NewError(http.StatusBadRequest, err.Error())
+	}
+	return createSectionCommand, nil
 }
 
 func mapToQuizDTO(q quiz.Quiz) (*QuizDTO, error) {

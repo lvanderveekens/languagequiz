@@ -28,7 +28,9 @@ export default function HomePage() {
       <div id="hero">
         <nav className="py-4 b-4">
           <div className="container text-xl text-white flex justify-between align-center">
-            <div className="text-2xl font-bold self-center">LanguageQuiz</div>
+            <div className="text-2xl font-bold self-center">
+              <Link href="/">LanguageQuiz</Link>
+            </div>
           </div>
         </nav>
 

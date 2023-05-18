@@ -10,11 +10,19 @@ import (
 
 var blankRegex = regexp.MustCompile(`______`)
 
+type CreateExerciseCommand interface {
+	Type() string
+}
+
 type CreateMultipleChoiceExerciseCommand struct {
 	Question string
 	Choices  []string
 	Answer   string
 	Feedback *string
+}
+
+func (c *CreateMultipleChoiceExerciseCommand) Type() string {
+	return TypeMultipleChoice
 }
 
 func NewCreateMultipleChoiceExerciseCommand(
@@ -44,6 +52,10 @@ type CreateFillInTheBlankExerciseCommand struct {
 	Feedback *string
 }
 
+func (c *CreateFillInTheBlankExerciseCommand) Type() string {
+	return TypeFillInTheBlank
+}
+
 func NewCreateFillInTheBlankExerciseCommand(
 	question, answer string,
 	feedback *string,
@@ -67,6 +79,10 @@ type CreateSentenceCorrectionExerciseCommand struct {
 	Sentence          string
 	CorrectedSentence string
 	Feedback          *string
+}
+
+func (c *CreateSentenceCorrectionExerciseCommand) Type() string {
+	return TypeSentenceCorrection
 }
 
 func NewCreateSentenceCorrectionExerciseCommand(

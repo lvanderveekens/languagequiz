@@ -198,12 +198,12 @@ func (s *QuizStorage) CreateQuiz(cmd quiz.CreateQuizCommand) (*quiz.Quiz, error)
 			var exerciseEntity *ExerciseEntity
 			var err error
 			switch createExerciseCommand := createExerciseCommand.(type) {
-			case exercise.CreateMultipleChoiceExerciseCommand:
-				exerciseEntity, err = insertMultipleChoiceExercise(tx, createExerciseCommand, quizSectionEntity.ID)
-			case exercise.CreateFillInTheBlankExerciseCommand:
-				exerciseEntity, err = insertFillInTheBlankExercise(tx, createExerciseCommand, quizSectionEntity.ID)
-			case exercise.CreateSentenceCorrectionExerciseCommand:
-				exerciseEntity, err = insertSentenceCorrectionExercise(tx, createExerciseCommand, quizSectionEntity.ID)
+			case *exercise.CreateMultipleChoiceExerciseCommand:
+				exerciseEntity, err = insertMultipleChoiceExercise(tx, *createExerciseCommand, quizSectionEntity.ID)
+			case *exercise.CreateFillInTheBlankExerciseCommand:
+				exerciseEntity, err = insertFillInTheBlankExercise(tx, *createExerciseCommand, quizSectionEntity.ID)
+			case *exercise.CreateSentenceCorrectionExerciseCommand:
+				exerciseEntity, err = insertSentenceCorrectionExercise(tx, *createExerciseCommand, quizSectionEntity.ID)
 			default:
 				return nil, fmt.Errorf("unknown exercise type: %T", createExerciseCommand)
 			}
