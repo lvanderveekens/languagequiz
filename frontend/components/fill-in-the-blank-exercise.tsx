@@ -26,6 +26,7 @@ const FillInTheBlankExercise: React.FC<Props> = ({ index, question, answer, setA
           type="text"
           value={answer ?? ""}
           onChange={handleChange}
+          required
         />
         {after}
       </div>

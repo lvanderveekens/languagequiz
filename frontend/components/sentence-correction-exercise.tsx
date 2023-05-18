@@ -21,6 +21,7 @@ const SentenceCorrectionExercise: React.FC<Props> = ({ index, sentence, answer, 
         type="text"
         value={answer ?? ""}
         onChange={handleChange}
+        required
       />
     </div>
   );

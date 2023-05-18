@@ -66,9 +66,6 @@ const Quiz: React.FC<Props> = ({
     <div className="">
       <div className="text-2xl font-bold mb-8">
         <span className="mr-2">{name}</span>
-        {/* <span
-          className={`fi fi-${getLanguageByTag(languageTag)?.countryCode}`}
-        /> */}
       </div>
 
       <div>
@@ -94,6 +91,7 @@ const Quiz: React.FC<Props> = ({
                             choices={exercise.choices!}
                             answer={answers[exerciseIndex]}
                             setAnswer={setAnswer(exerciseIndex)}
+                            correctAnswer={results?.[exerciseIndex].answer}
                           />
                         );
                         break;
@@ -130,10 +128,10 @@ const Quiz: React.FC<Props> = ({
             </div>
           ))}
           <button
-            type="submit"
             className="text-xl text-white bg-[#003259] font-bold px-4 py-2 border-2 border-[#003259] rounded-lg px-3"
+            type="submit"
           >
-            Submit
+            Check
           </button>
         </form>
         {results && <p>{JSON.stringify(results)}</p>}
