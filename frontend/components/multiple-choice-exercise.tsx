@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { ChangeEvent } from 'react';
+import React from 'react';
+import { FaComment, FaRegComment } from 'react-icons/fa';
 
 type Props = {
   index: number
@@ -8,6 +8,7 @@ type Props = {
   answer?: string
   setAnswer: (answer: string) => void
   correctAnswer?: string
+  feedback?: string
 };
 
 const MultipleChoiceExercise: React.FC<Props> = ({
@@ -17,6 +18,7 @@ const MultipleChoiceExercise: React.FC<Props> = ({
   answer,
   setAnswer,
   correctAnswer,
+  feedback,
 }) => {
   return (
     <div className="">
@@ -28,7 +30,10 @@ const MultipleChoiceExercise: React.FC<Props> = ({
           <div>
             <label
               key={choice}
-              className={`${choice === correctAnswer ? "text-green-500" : ""}`}
+              className={`
+                ${correctAnswer != null && correctAnswer === choice ? "text-green-500" : ""}
+                ${correctAnswer != null && choice === answer && answer != correctAnswer ? "text-red-500" : ""}
+              `}
             >
               <input
                 className="mr-2"
@@ -43,6 +48,13 @@ const MultipleChoiceExercise: React.FC<Props> = ({
             </label>
           </div>
         ))}
+        {feedback && (
+          <div className='pt-4'>
+            <span className="p-4 border border-black inline-flex">
+              <FaRegComment className="text-2xl inline mr-2" /> {feedback}
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );

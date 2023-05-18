@@ -35,6 +35,7 @@ export interface SubmitAnswersResponse{
 export interface SubmitAnswerResult {
   correct: boolean
   answer: any
+  feedback?: string
 }
 
 export interface CreateQuizRequest {

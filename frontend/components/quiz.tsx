@@ -92,6 +92,7 @@ const Quiz: React.FC<Props> = ({
                             answer={answers[exerciseIndex]}
                             setAnswer={setAnswer(exerciseIndex)}
                             correctAnswer={results?.[exerciseIndex].answer}
+                            feedback={results?.[exerciseIndex].feedback}
                           />
                         );
                         break;
