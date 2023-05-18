@@ -1,6 +1,7 @@
 
 export interface QuizDto {
   id: string
+  createdAt: string
   languageTag: string
   name: string
   sections: QuizSectionDto[]

@@ -7,6 +7,7 @@ import (
 	"languagequiz/quiz"
 	"languagequiz/quiz/exercise"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/text/language"
@@ -246,7 +247,7 @@ func mapToQuizDTO(q quiz.Quiz) (*QuizDTO, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to map quiz sections to dtos: %w", err)
 	}
-	quizDTO := newQuizDTO(q.ID, q.Name, q.LanguageTag.String(), quizSectionDTOs)
+	quizDTO := newQuizDTO(q.ID, q.CreatedAt, q.Name, q.LanguageTag.String(), quizSectionDTOs)
 	return &quizDTO, nil
 }
 
@@ -288,14 +289,16 @@ func mapToExerciseDTOs(exercises []exercise.Exercise) ([]any, error) {
 
 type QuizDTO struct {
 	ID          string           `json:"id"`
+	CreatedAt   time.Time        `json:"createdAt"`
 	Name        string           `json:"name"`
 	LanguageTag string           `json:"languageTag"`
 	Sections    []QuizSectionDTO `json:"sections"`
 }
 
-func newQuizDTO(id, name, languageTag string, sections []QuizSectionDTO) QuizDTO {
+func newQuizDTO(id string, createdAt time.Time, name, languageTag string, sections []QuizSectionDTO) QuizDTO {
 	return QuizDTO{
 		ID:          id,
+		CreatedAt:   createdAt,
 		Name:        name,
 		LanguageTag: languageTag,
 		Sections:    sections,
