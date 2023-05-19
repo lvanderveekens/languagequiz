@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaComment, FaRegComment } from 'react-icons/fa';
+import Feedback from './feedback';
 
 type Props = {
   index: number
@@ -9,6 +9,7 @@ type Props = {
   setAnswer: (answer: string) => void
   correctAnswer?: string
   feedback?: string
+  disabled?: boolean
 };
 
 const MultipleChoiceExercise: React.FC<Props> = ({
@@ -19,7 +20,10 @@ const MultipleChoiceExercise: React.FC<Props> = ({
   setAnswer,
   correctAnswer,
   feedback,
+  disabled,
 }) => {
+  const answeredCorrectly = answer === correctAnswer;
+
   return (
     <div className="">
       <div>
@@ -31,8 +35,8 @@ const MultipleChoiceExercise: React.FC<Props> = ({
             <label
               key={choice}
               className={`
-                ${correctAnswer != null && correctAnswer === choice ? "text-green-500" : ""}
-                ${correctAnswer != null && choice === answer && answer != correctAnswer ? "text-red-500" : ""}
+                ${correctAnswer != null && choice === correctAnswer ? "text-green-500" : ""}
+                ${correctAnswer != null && choice === answer && !answeredCorrectly ? "text-red-500" : ""}
               `}
             >
               <input
@@ -43,18 +47,13 @@ const MultipleChoiceExercise: React.FC<Props> = ({
                 onChange={(event) => setAnswer(event.target.value)}
                 name={`exercise-${index + 1}`}
                 required
+                disabled={disabled}
               />
               {choice}
             </label>
           </div>
         ))}
-        {feedback && (
-          <div className='pt-4'>
-            <span className="p-4 border border-black inline-flex">
-              <FaRegComment className="text-2xl inline mr-2" /> {feedback}
-            </span>
-          </div>
-        )}
+        {feedback && !answeredCorrectly && <Feedback feedback={feedback} />}
       </div>
     </div>
   );

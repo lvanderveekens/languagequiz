@@ -19,9 +19,10 @@ const Quiz: React.FC<Props> = ({
   name,
   sections,
 }) => {
-  const [exercises, setExercises] = useState<ExerciseDto[]>(sections.flatMap(section => section.exercises));
+  const [exercises] = useState<ExerciseDto[]>(sections.flatMap(section => section.exercises));
   const [answers, setAnswers] = useState<any[]>(Array.from({ length: exercises.length }, () => null));
   const [results, setResults] = useState<SubmitAnswerResult[]>();
+  const [submitted, setSubmitted] = useState<boolean>(false);
 
   const handleSubmit = async (event: any) => {
     event.preventDefault();
@@ -45,6 +46,14 @@ const Quiz: React.FC<Props> = ({
     } catch (error) {
       console.error(error);
     }
+
+    setSubmitted(true);
+  };
+
+  const resetForm = () => {
+    setAnswers(Array.from({ length: exercises.length }, () => null));
+    setResults([]);
+    setSubmitted(false);
   };
 
   const setAnswer = (index: number) => {
@@ -91,8 +100,9 @@ const Quiz: React.FC<Props> = ({
                             choices={exercise.choices!}
                             answer={answers[exerciseIndex]}
                             setAnswer={setAnswer(exerciseIndex)}
-                            correctAnswer={results?.[exerciseIndex].answer}
-                            feedback={results?.[exerciseIndex].feedback}
+                            correctAnswer={results?.[exerciseIndex]?.answer}
+                            feedback={results?.[exerciseIndex]?.feedback}
+                            disabled={submitted}
                           />
                         );
                         break;
@@ -104,6 +114,9 @@ const Quiz: React.FC<Props> = ({
                             question={exercise.question!}
                             answer={answers[exerciseIndex]}
                             setAnswer={setAnswer(exerciseIndex)}
+                            correctAnswer={results?.[exerciseIndex]?.answer}
+                            feedback={results?.[exerciseIndex]?.feedback}
+                            disabled={submitted}
                           />
                         );
                         break;
@@ -115,13 +128,14 @@ const Quiz: React.FC<Props> = ({
                             sentence={exercise.sentence!}
                             answer={answers[exerciseIndex]}
                             setAnswer={setAnswer(exerciseIndex)}
+                            correctAnswer={results?.[exerciseIndex]?.answer}
+                            feedback={results?.[exerciseIndex]?.feedback}
+                            disabled={submitted}
                           />
                         );
                         break;
                       default:
-                        exerciseComponent = (
-                          <p>Unexpected exercise type: {exercise.type}</p>
-                        );
+                        exerciseComponent = <p>Unexpected exercise type: {exercise.type}</p>;
                     }
                     return <div className="mb-4">{exerciseComponent}</div>;
                   })}
@@ -129,13 +143,22 @@ const Quiz: React.FC<Props> = ({
             </div>
           ))}
           <button
-            className="text-xl text-white bg-[#003259] font-bold px-4 py-2 border-2 border-[#003259] rounded-lg px-3"
+            className="text-xl mb-8 text-white bg-[#003259] font-bold px-4 py-2 border-2 border-[#003259] rounded-lg px-3 disabled:opacity-50"
             type="submit"
+            disabled={submitted}
           >
             Check
           </button>
+          {submitted && (
+            <button
+              className="ml-4 text-xl mb-8 text-[#003259] font-bold px-4 py-2 border-2 border-[#003259] rounded-lg px-3 disabled:opacity-50"
+              type="button"
+              onClick={resetForm}
+            >
+              Reset
+            </button>
+          )}
         </form>
-        {results && <p>{JSON.stringify(results)}</p>}
       </div>
     </div>
   );
