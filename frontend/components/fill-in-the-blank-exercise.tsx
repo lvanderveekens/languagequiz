@@ -34,19 +34,17 @@ const FillInTheBlankExercise: React.FC<Props> = ({
     <div className="">
       <div>
         {index + 1}. {before}
-        {!correctAnswer && (
-          <input
-            className="border"
-            type="text"
-            value={answer ?? ""}
-            onChange={handleChange}
-            required
-            disabled={disabled}
-          />
-        )}
-        {correctAnswer && answeredCorrectly && <span className="text-green-500">{answer} ✅</span>}
-        {correctAnswer && !answeredCorrectly && <span className="text-red-500">{answer} ❌</span>}
+        <input
+          className={`border`}
+          type="text"
+          value={answer ?? ""}
+          onChange={handleChange}
+          required
+          disabled={disabled}
+        />
         {after}
+        {correctAnswer && answeredCorrectly && <span className="text-green-500"> ✅</span>}
+        {correctAnswer && !answeredCorrectly && <span className="text-red-500"> ❌</span>}
       </div>
       {correctAnswer && !answeredCorrectly && <div className="text-red-500">Correct answer: {correctAnswer}</div>}
       {feedback && !answeredCorrectly && <Feedback feedback={feedback} />}

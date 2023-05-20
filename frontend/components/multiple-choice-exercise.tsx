@@ -28,16 +28,15 @@ const MultipleChoiceExercise: React.FC<Props> = ({
     <div className="">
       <div>
         {index + 1}. {question}
+        {correctAnswer != null && answeredCorrectly && <span> ✅</span>}
+        {correctAnswer != null && !answeredCorrectly && <span> ❌</span>}
       </div>
       <div>
         {choices.map((choice: string) => (
           <div>
             <label
               key={choice}
-              className={`
-                ${correctAnswer != null && choice === answer && answeredCorrectly ? "text-green-500" : ""}
-                ${correctAnswer != null && choice === answer && !answeredCorrectly ? "text-red-500" : ""}
-              `}
+              className={``}
             >
               <input
                 className="mr-2"
@@ -50,8 +49,6 @@ const MultipleChoiceExercise: React.FC<Props> = ({
                 disabled={disabled}
               />
               {choice}
-              {correctAnswer != null && choice === answer && answeredCorrectly && <span> ✅</span>}
-              {correctAnswer != null && choice === answer && !answeredCorrectly && <span> ❌</span>}
             </label>
           </div>
         ))}

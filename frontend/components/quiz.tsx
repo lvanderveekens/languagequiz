@@ -72,6 +72,12 @@ const Quiz: React.FC<Props> = ({
 
   let exerciseIndex = -1;
 
+  const getScore = (results: SubmitAnswerResult[]) => {
+    let fraction = results.filter((result) => result.correct).length / results.length;
+    const percentage = Math.ceil(fraction * 100);
+    return `${percentage}%`;
+  };
+
   return (
     <div className="">
       <div className="text-2xl font-bold mb-8">
@@ -150,6 +156,14 @@ const Quiz: React.FC<Props> = ({
             <Button type="button" className="mb-8 ml-3" variant="secondary-dark" onClick={resetForm}>
               Reset
             </Button>
+          )}
+          {results && results.length > 0 && (
+            <div className="mb-8">
+              <span className="items-center px-4 py-2 border-2 border-[#cdcdcd] rounded-lg bg-[#eeeeee] inline-flex">
+                <span className="text-4xl mr-2">🎓</span>
+                Your score: {getScore(results)}
+              </span>
+            </div>
           )}
         </form>
       </div>
