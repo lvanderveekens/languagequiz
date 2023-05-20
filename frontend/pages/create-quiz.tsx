@@ -1,4 +1,4 @@
-import { CreateQuizRequest, ExerciseType } from "@/components/models";
+import { CreateQuizRequest, ExerciseFormValues, ExerciseType, QuizFormValues, QuizSectionFormValues, labelByExerciseType } from "@/components/models";
 import { useState } from "react";
 import { v4 as uuidv4 } from 'uuid';
 import { useRouter } from 'next/router';
@@ -6,17 +6,21 @@ import languages, { getLanguageByTag } from "@/components/languages";
 import Navbar from "@/components/navbar";
 import "/node_modules/flag-icons/css/flag-icons.min.css";
 import Button from "@/components/button";
+import { GrFormClose } from "react-icons/gr";
+
+
+const getInitialQuizSectionFormValues: () => QuizSectionFormValues = () => ({
+  _key: uuidv4(),
+  exercises: [
+    {
+      _key: uuidv4(),
+    },
+  ],
+});
 
 const initialQuizFormValues: QuizFormValues = {
   sections: [
-    {
-      _key: uuidv4(),
-      exercises: [
-        {
-          _key: uuidv4(),
-        },
-      ],
-    },
+    getInitialQuizSectionFormValues()
   ],
 };
 
@@ -95,82 +99,101 @@ export default function CreateQuizPage() {
     setFormValues(updatedFormValues)
   }
 
-  const handleAddSectionClick = () => {
-    const newSection = {_key: uuidv4()}
+  const handleAddSection = () => {
+    const newSection = getInitialQuizSectionFormValues(); 
     setFormValues({ ...formValues, sections: [...(formValues.sections ?? []), newSection] });
+  };
+  
+  const handleRemoveSection = (index: number) => () => {
+    setFormValues((prevState) => ({
+      ...prevState,
+      sections: [...(prevState.sections ?? [])].filter((_, i) => i !== index),
+    }));
   };
 
   return (
     <div>
       <Navbar className="mb-8" />
       <div className="container mx-auto">
-        <div className="text-2xl font-bold mb-8">
-          <span className="mr-2">Create quiz</span>
-        </div>
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label>
-              <div className="font-bold">Name</div>
-              <input
-                className=""
-                type="text"
-                placeholder="Enter a name"
-                value={formValues.name ?? ""}
-                onChange={handleNameChange}
-                required
-              />
-            </label>
+        <div className="max-w-screen-sm">
+          <div className="text-2xl font-bold mb-8">
+            <span className="mr-2">Create a quiz</span>
           </div>
-          <div className="mb-4">
-            <label className="">
-              <div className="font-bold">Language</div>
-              <div className="flex">
-                <select className="mr-1" value={formValues.languageTag} onChange={handleLanguageChange} required>
-                  <option selected disabled value="">
-                    Select a language
-                  </option>
-                  {languages
-                    .sort((a, b) => a.name.localeCompare(b.name))
-                    .map((language) => (
-                      <option key={language.languageTag} value={language.languageTag}>
-                        {language.name}
-                      </option>
-                    ))}
-                </select>
-                {formValues.languageTag && (
-                  <span
-                    className={`border box-content text-2xl mr-1 fi fi-${getLanguageByTag(formValues.languageTag)?.countryCode}`}
-                  />
-                )}
-              </div>
-            </label>
-          </div>
-          {formValues.sections &&
-            formValues.sections.map((formValues: QuizSectionFormValues, i) => (
-              <QuizSectionInput
-                className="border mb-4 p-4"
-                key={formValues._key}
-                name={formValues.name}
-                onNameChange={handleSectionNameChange(i)}
-                exercises={formValues.exercises}
-                onExercisesChange={handleExercisesChange(i)}
-              />
-            ))}
+          <form onSubmit={handleSubmit}>
+            <div className="mb-4">
+              <label>
+                <div className="">Name</div>
+                <input
+                  className="w-full"
+                  type="text"
+                  placeholder="Enter a name"
+                  value={formValues.name ?? ""}
+                  onChange={handleNameChange}
+                  required
+                />
+              </label>
+            </div>
+            <div className="mb-4">
+              <label className="">
+                <div className="">Language</div>
+                <div className="flex">
+                  <select
+                    className="mr-1 w-full"
+                    value={formValues.languageTag}
+                    onChange={handleLanguageChange}
+                    required
+                  >
+                    <option selected disabled value="">
+                      Select a language
+                    </option>
+                    {languages
+                      .sort((a, b) => a.name.localeCompare(b.name))
+                      .map((language) => (
+                        <option key={language.languageTag} value={language.languageTag}>
+                          {language.name}
+                        </option>
+                      ))}
+                  </select>
+                  {formValues.languageTag && (
+                    <span
+                      className={`border box-content text-2xl mr-1 fi fi-${
+                        getLanguageByTag(formValues.languageTag)?.countryCode
+                      }`}
+                    />
+                  )}
+                </div>
+              </label>
+            </div>
+            {formValues.sections &&
+              formValues.sections.map((formValues: QuizSectionFormValues, i) => (
+                <QuizSectionInput
+                  className="border mb-4 p-4"
+                  key={formValues._key}
+                  name={formValues.name}
+                  onNameChange={handleSectionNameChange(i)}
+                  exercises={formValues.exercises}
+                  onExercisesChange={handleExercisesChange(i)}
+                  onRemove={i != 0 ? handleRemoveSection(i) : undefined}
+                />
+              ))}
 
-          <div className="mb-4">
-            <button type="button" className="border p-4 w-full px-3 flex items-center justify-center" onClick={handleAddSectionClick}>
-              <span className="text-2xl mr-1">➕</span>
-              Add section
-            </button>
-          </div>
+            <div className="mb-4">
+              <button
+                type="button"
+                className="border p-4 w-full px-3 flex items-center justify-center"
+                onClick={handleAddSection}
+              >
+                <span className="text-2xl mr-1">➕</span>
+                Add section
+              </button>
+            </div>
 
-          <div>
-            <Button variant="primary-dark" type="submit">
+            <Button className="mb-4" variant="primary-dark" type="submit">
               Create
             </Button>
-          </div>
-        </form>
-        {errorMessage && <div>Error: {errorMessage}</div>}
+          </form>
+          {errorMessage && <div>Error: {errorMessage}</div>}
+        </div>
       </div>
     </div>
   );
@@ -182,6 +205,7 @@ type QuizSectionInputProps = {
   onNameChange: (name: string) => void
   exercises?: ExerciseFormValues[]
   onExercisesChange: (exercises: ExerciseFormValues[]) => void
+  onRemove?: () => void
 };
 
 const QuizSectionInput: React.FC<QuizSectionInputProps> = ({
@@ -190,7 +214,13 @@ const QuizSectionInput: React.FC<QuizSectionInputProps> = ({
   onNameChange,
   exercises,
   onExercisesChange,
+  onRemove,
 }) => {
+
+  const handleRemoveClick = (event: any) => {
+    event.preventDefault();
+    onRemove!()
+  }
 
   const handleAddExerciseClick = () => {
     const newExercise = { _key: uuidv4() };
@@ -206,15 +236,21 @@ const QuizSectionInput: React.FC<QuizSectionInputProps> = ({
     };
 
   return (
-    <div className={`${className}`}>
-      <div className="text-xl font-bold mb-4">
-        Section
-      </div>
+    <div className={`${className} w-full`}>
+      {onRemove == null && <div className="mb-4 text-xl font-bold">Section</div>}
+      {onRemove != null && (
+        <div className="flex justify-between items-center mb-4">
+          <div className="text-xl font-bold">Section</div>
+          <button className="text-3xl" onClick={handleRemoveClick}>
+            <GrFormClose />
+          </button>
+        </div>
+      )}
       <div className="mb-4">
         <label>
           <span className="mr-3">Name</span>
           <input
-            className="border"
+            className="w-full"
             placeholder="Enter a name"
             type="text"
             value={name ?? ""}
@@ -223,19 +259,36 @@ const QuizSectionInput: React.FC<QuizSectionInputProps> = ({
           />
         </label>
       </div>
-      {exercises &&
+
+      <div className="mb-4">
+        <label className="" htmlFor="choice">
+          <div>Exercise type</div>
+          <select
+            // value={value.type}
+            // onChange={handleTypeChange}
+            required
+          >
+            <option value="">Select an exercise type</option>
+            {Object.values(ExerciseType)
+              .filter((key) => isNaN(Number(key)))
+              .map((exerciseType) => (
+                <option key={exerciseType} value={exerciseType}>
+                   {labelByExerciseType[exerciseType]}
+                </option>
+              ))}
+          </select>
+        </label>
+      </div>
+
+      {/* {exercises &&
         exercises.map((formValues: ExerciseFormValues, i) => (
           <ExerciseInput key={formValues._key} value={exercises[i]} onChange={handleExerciseChange(i)} />
         ))}
       <div>
-        <button
-          type="button"
-          className="border border-black px-3"
-          onClick={handleAddExerciseClick}
-        >
+        <button type="button" className="border border-black px-3" onClick={handleAddExerciseClick}>
           Add exercise
         </button>
-      </div>
+      </div> */}
     </div>
   );
 }
@@ -256,7 +309,7 @@ const ExerciseInput: React.FC<ExerciseInputProps> = ({
 
   if (!value.type) {
     return (
-      <div className="border border-black">
+      <div className="border p-4">
         Exercise
         <div>
           <label htmlFor="choice">Exercise type:</label>
@@ -571,27 +624,4 @@ const SentenceCorrectionExerciseInput: React.FC<SentenceCorrectionExerciseInputP
       </div>
     </div>
   );
-}
-
-interface QuizFormValues {
-    languageTag?: string
-    name?: string
-    sections?: QuizSectionFormValues[]
-}
-
-interface QuizSectionFormValues {
-    _key: string
-    name?: string
-    exercises?: ExerciseFormValues[]
-}
-
-interface ExerciseFormValues {
-  _key: string;
-  type?: string;
-  question?: string;
-  choices?: string[];
-  sentence?: string;
-  correctedSentence?: string;
-  answer?: string
-  feedback?: string
 }

@@ -64,3 +64,32 @@ export enum ExerciseType {
   FillInTheBlank = "fillInTheBlank",
   SentenceCorrection = "sentenceCorrection",
 }
+
+export const labelByExerciseType = {
+  [ExerciseType.MultipleChoice]: 'Multiple choice',
+  [ExerciseType.FillInTheBlank]: 'Fill in the blank',
+  [ExerciseType.SentenceCorrection]: 'Sentence correction',
+};
+
+export interface QuizFormValues {
+    languageTag?: string
+    name?: string
+    sections?: QuizSectionFormValues[]
+}
+
+export interface QuizSectionFormValues {
+    _key: string
+    name?: string
+    exercises?: ExerciseFormValues[]
+}
+
+export interface ExerciseFormValues {
+  _key: string;
+  type?: string;
+  question?: string;
+  choices?: string[];
+  sentence?: string;
+  correctedSentence?: string;
+  answer?: string
+  feedback?: string
+}

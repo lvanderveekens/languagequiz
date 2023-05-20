@@ -2,14 +2,9 @@
 import { QuizDto } from '@/components/models';
 import Navbar from '@/components/navbar';
 import Quiz from '@/components/quiz';
-import { Inter } from 'next/font/google'
-import Link from 'next/link';
+import { Inter } from 'next/font/google';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
-// import Quiz from '../quiz';
-// import { QuizDto } from '../components/models';
-
-const inter = Inter({ subsets: ['latin'] })
 
 export default function QuizPage() {
   const router = useRouter();
@@ -31,9 +26,11 @@ export default function QuizPage() {
     <div>
       <Navbar className="mb-8" />
       <div className="container mx-auto">
-        {quiz && (
-          <Quiz key={quiz.id} id={quiz.id} languageTag={quiz.languageTag} name={quiz.name} sections={quiz.sections} />
-        )}
+        <div className="max-w-screen-sm">
+          {quiz && (
+            <Quiz key={quiz.id} id={quiz.id} languageTag={quiz.languageTag} name={quiz.name} sections={quiz.sections} />
+          )}
+        </div>
       </div>
     </div>
   );
