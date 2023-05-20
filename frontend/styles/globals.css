@@ -2,6 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+    input {
+        padding-left: 4px;
+        padding-right: 4px;
+        @apply border;
+    }
+    select {
+        height: 26px;
+        @apply border;
+    }
+}
+
 #hero {
     background-image: url('/hero.svg');
     background-size: cover;

@@ -1,5 +1,6 @@
 
 import { QuizDto } from '@/components/models';
+import Navbar from '@/components/navbar';
 import Quiz from '@/components/quiz';
 import { Inter } from 'next/font/google'
 import Link from 'next/link';
@@ -28,22 +29,10 @@ export default function QuizPage() {
 
   return (
     <div>
-      <nav className="py-4 b-4 bg-[#003259] mb-8">
-        <div className="container text-xl text-white flex justify-between align-center">
-          <div className="text-2xl font-bold self-center">
-            <Link href="/">LanguageQuiz</Link>
-          </div>
-        </div>
-      </nav>
+      <Navbar className="mb-8" />
       <div className="container mx-auto">
         {quiz && (
-          <Quiz
-            key={quiz.id}
-            id={quiz.id}
-            languageTag={quiz.languageTag}
-            name={quiz.name}
-            sections={quiz.sections}
-          />
+          <Quiz key={quiz.id} id={quiz.id} languageTag={quiz.languageTag} name={quiz.name} sections={quiz.sections} />
         )}
       </div>
     </div>

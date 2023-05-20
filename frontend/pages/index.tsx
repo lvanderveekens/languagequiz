@@ -7,6 +7,7 @@ import { getLanguageByTag } from '@/components/languages'
 import "/node_modules/flag-icons/css/flag-icons.min.css";
 import moment from 'moment';
 import Button from '@/components/button'
+import Navbar from '@/components/navbar'
 
 
 const inter = Inter({ subsets: ['latin'] })
@@ -27,13 +28,7 @@ export default function HomePage() {
   return (
     <main>
       <div id="hero">
-        <nav className="py-4 b-4">
-          <div className="container text-xl text-white flex justify-between align-center">
-            <div className="text-2xl font-bold self-center">
-              <Link href="/">LanguageQuiz</Link>
-            </div>
-          </div>
-        </nav>
+        <Navbar className="bg-transparent" />
 
         <div className="text-center">
           <div className="container mx-auto text-white">
@@ -42,10 +37,12 @@ export default function HomePage() {
                 Language Quizzes Made Easy: Empowering Students, Supporting Teachers.
               </div>
               <div>
-                <Button className="text-xl mb-4" variant="primary-light" onClick={() => router.push("#latest-quizzes")}>Take a quiz</Button>
+                <Button className="text-xl mb-4" variant="primary-light" onClick={() => router.push("#latest-quizzes")}>
+                  Take a quiz
+                </Button>
               </div>
               <div className="">
-                <Button variant='secondary-light' className="text-xl" onClick={() => router.push("/create-quiz")} >
+                <Button variant="secondary-light" className="text-xl" onClick={() => router.push("/create-quiz")}>
                   Create a quiz
                 </Button>
               </div>

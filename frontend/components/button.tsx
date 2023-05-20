@@ -4,7 +4,6 @@ interface Props extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant: 'primary-dark' | 'secondary-dark' | 'primary-light' | 'secondary-light';
 }
 
-
 const Button: React.FC<Props> = ({ variant, className, ...props }) => {
   let variantClasses = '';
   switch (variant) {

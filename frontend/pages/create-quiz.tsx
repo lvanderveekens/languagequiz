@@ -3,6 +3,7 @@ import { useState } from "react";
 import { v4 as uuidv4 } from 'uuid';
 import { useRouter } from 'next/router';
 import languages from "@/components/languages";
+import Navbar from "@/components/navbar";
 
 const initialQuizFormValues: QuizFormValues = {
   sections: [
@@ -98,67 +99,73 @@ export default function CreateQuizPage() {
   };
 
   return (
-    <div className="container mx-auto">
-      Create quiz page
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label htmlFor="language">Language:</label>
-          <select
-            id="language"
-            name="language"
-            value={formValues.languageTag}
-            onChange={handleLanguageChange}
-            required
-          >
-            <option value="">Select an option</option>
-            {languages
-              .map((language) => (
-                <option key={language.languageTag} value={language.languageTag}>
-                  {language.name}
+    <div>
+      <Navbar className="mb-8" />
+      <div className="container mx-auto">
+        <div className="text-2xl font-bold mb-8">
+          <span className="mr-2">Create quiz</span>
+        </div>
+        <form onSubmit={handleSubmit}>
+          <div className="mb-4">
+            <label>
+              <div className="font-bold">Name</div>
+              <input
+                className=""
+                type="text"
+                placeholder="Enter a name"
+                value={formValues.name ?? ""}
+                onChange={handleNameChange}
+                required
+              />
+            </label>
+          </div>
+          <div className="mb-4">
+            <label>
+              <div className="font-bold">Language</div>
+              <select
+                className="invalid:text-gray-400"
+                placeholder="Select a language"
+                value={formValues.languageTag}
+                onChange={handleLanguageChange}
+                required
+              >
+                <option selected disabled value="">
+                  Select a language
                 </option>
-              ))}
-          </select>
-        </div>
-        <div>
-          <label>
-            <span className="mr-3">Name</span>
-            <input
-              className="border border-black"
-              type="text"
-              value={formValues.name ?? ""}
-              onChange={handleNameChange}
-              required
-            />
-          </label>
-        </div>
+                {languages
+                  .sort((a, b) => a.name.localeCompare(b.name))
+                  .map((language) => (
+                    <option key={language.languageTag} value={language.languageTag}>
+                      {language.name}
+                    </option>
+                  ))}
+              </select>
+            </label>
+          </div>
+          {formValues.sections &&
+            formValues.sections.map((formValues: QuizSectionFormValues, i) => (
+              <QuizSectionInput
+                key={formValues._key}
+                name={formValues.name}
+                onNameChange={handleSectionNameChange(i)}
+                exercises={formValues.exercises}
+                onExercisesChange={handleExercisesChange(i)}
+              />
+            ))}
 
-        {formValues.sections &&
-          formValues.sections.map((formValues: QuizSectionFormValues, i) => (
-            <QuizSectionInput
-              key={formValues._key}
-              name={formValues.name}
-              onNameChange={handleSectionNameChange(i)}
-              exercises={formValues.exercises}
-              onExercisesChange={handleExercisesChange(i)}
-            />
-          ))}
-
-        <div>
-          <button
-            type="button"
-            className="border border-black px-3"
-            onClick={handleAddSectionClick}
-          >
-            Add section
-          </button>
-        </div>
-        <div>
-          <button className="border border-black px-3" type="submit">
-            Submit
-          </button>
-        </div>
-      </form>
-      {errorMessage && <div>Error: {errorMessage}</div>}
+          <div>
+            <button type="button" className="border border-black px-3" onClick={handleAddSectionClick}>
+              Add section
+            </button>
+          </div>
+          <div>
+            <button className="border border-black px-3" type="submit">
+              Submit
+            </button>
+          </div>
+        </form>
+        {errorMessage && <div>Error: {errorMessage}</div>}
+      </div>
     </div>
   );
 }
