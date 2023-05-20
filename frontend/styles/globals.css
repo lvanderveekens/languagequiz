@@ -8,9 +8,11 @@
         padding-right: 4px;
         @apply border;
     }
+
     select {
         height: 26px;
         @apply border;
+        @apply invalid:text-gray-400
     }
 }
 

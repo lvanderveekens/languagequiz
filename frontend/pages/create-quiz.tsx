@@ -2,8 +2,10 @@ import { CreateQuizRequest, ExerciseType } from "@/components/models";
 import { useState } from "react";
 import { v4 as uuidv4 } from 'uuid';
 import { useRouter } from 'next/router';
-import languages from "@/components/languages";
+import languages, { getLanguageByTag } from "@/components/languages";
 import Navbar from "@/components/navbar";
+import "/node_modules/flag-icons/css/flag-icons.min.css";
+import Button from "@/components/button";
 
 const initialQuizFormValues: QuizFormValues = {
   sections: [
@@ -120,31 +122,33 @@ export default function CreateQuizPage() {
             </label>
           </div>
           <div className="mb-4">
-            <label>
+            <label className="">
               <div className="font-bold">Language</div>
-              <select
-                className="invalid:text-gray-400"
-                placeholder="Select a language"
-                value={formValues.languageTag}
-                onChange={handleLanguageChange}
-                required
-              >
-                <option selected disabled value="">
-                  Select a language
-                </option>
-                {languages
-                  .sort((a, b) => a.name.localeCompare(b.name))
-                  .map((language) => (
-                    <option key={language.languageTag} value={language.languageTag}>
-                      {language.name}
-                    </option>
-                  ))}
-              </select>
+              <div className="flex">
+                <select className="mr-1" value={formValues.languageTag} onChange={handleLanguageChange} required>
+                  <option selected disabled value="">
+                    Select a language
+                  </option>
+                  {languages
+                    .sort((a, b) => a.name.localeCompare(b.name))
+                    .map((language) => (
+                      <option key={language.languageTag} value={language.languageTag}>
+                        {language.name}
+                      </option>
+                    ))}
+                </select>
+                {formValues.languageTag && (
+                  <span
+                    className={`border box-content text-2xl mr-1 fi fi-${getLanguageByTag(formValues.languageTag)?.countryCode}`}
+                  />
+                )}
+              </div>
             </label>
           </div>
           {formValues.sections &&
             formValues.sections.map((formValues: QuizSectionFormValues, i) => (
               <QuizSectionInput
+                className="border mb-4 p-4"
                 key={formValues._key}
                 name={formValues.name}
                 onNameChange={handleSectionNameChange(i)}
@@ -153,15 +157,17 @@ export default function CreateQuizPage() {
               />
             ))}
 
-          <div>
-            <button type="button" className="border border-black px-3" onClick={handleAddSectionClick}>
+          <div className="mb-4">
+            <button type="button" className="border p-4 w-full px-3 flex items-center justify-center" onClick={handleAddSectionClick}>
+              <span className="text-2xl mr-1">➕</span>
               Add section
             </button>
           </div>
+
           <div>
-            <button className="border border-black px-3" type="submit">
-              Submit
-            </button>
+            <Button variant="primary-dark" type="submit">
+              Create
+            </Button>
           </div>
         </form>
         {errorMessage && <div>Error: {errorMessage}</div>}
@@ -171,6 +177,7 @@ export default function CreateQuizPage() {
 }
 
 type QuizSectionInputProps = {
+  className?: string
   name?: string
   onNameChange: (name: string) => void
   exercises?: ExerciseFormValues[]
@@ -178,6 +185,7 @@ type QuizSectionInputProps = {
 };
 
 const QuizSectionInput: React.FC<QuizSectionInputProps> = ({
+  className,
   name,
   onNameChange,
   exercises,
@@ -198,13 +206,16 @@ const QuizSectionInput: React.FC<QuizSectionInputProps> = ({
     };
 
   return (
-    <div className="border border-black">
-      Section
-      <div>
+    <div className={`${className}`}>
+      <div className="text-xl font-bold mb-4">
+        Section
+      </div>
+      <div className="mb-4">
         <label>
           <span className="mr-3">Name</span>
           <input
-            className="border border-black"
+            className="border"
+            placeholder="Enter a name"
             type="text"
             value={name ?? ""}
             onChange={(e) => onNameChange(e.target.value)}

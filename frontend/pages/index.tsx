@@ -76,7 +76,7 @@ export default function HomePage() {
                             </div>
                             <div>
                               <span className="font-bold">Language: </span>
-                              <span className={`mr-1 fi fi-${getLanguageByTag(quiz.languageTag)?.countryCode}`} />
+                              <span className={`border box-content mr-1 fi fi-${getLanguageByTag(quiz.languageTag)?.countryCode}`} />
                               <span className="">{getLanguageByTag(quiz.languageTag)?.name}</span>
                             </div>
                             <div>
