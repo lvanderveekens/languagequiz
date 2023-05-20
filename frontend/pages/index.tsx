@@ -6,6 +6,7 @@ import { QuizDto, getNumberOfExercises } from '../components/models'
 import { getLanguageByTag } from '@/components/languages'
 import "/node_modules/flag-icons/css/flag-icons.min.css";
 import moment from 'moment';
+import Button from '@/components/button'
 
 
 const inter = Inter({ subsets: ['latin'] })
@@ -38,24 +39,15 @@ export default function HomePage() {
           <div className="container mx-auto text-white">
             <div className="py-40">
               <div className="text-3xl font-bold mb-8">
-                Language Quizzes Made Easy: Empowering Students, Supporting
-                Teachers.
+                Language Quizzes Made Easy: Empowering Students, Supporting Teachers.
               </div>
               <div>
-                <button
-                  className="text-[#003259] font-bold text-xl bg-white border-2 border-white px-4 py-2 rounded-lg px-3 mb-4"
-                  onClick={() => router.push("#latest-quizzes")}
-                >
-                  Take a quiz
-                </button>
+                <Button className="text-xl mb-4" variant="primary-light" onClick={() => router.push("#latest-quizzes")}>Take a quiz</Button>
               </div>
               <div className="">
-                <button
-                  className="text-xl font-bold px-4 py-2 border-2 border-white rounded-lg px-3"
-                  onClick={() => router.push("/create-quiz")}
-                >
+                <Button variant='secondary-light' className="text-xl" onClick={() => router.push("/create-quiz")} >
                   Create a quiz
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -77,35 +69,24 @@ export default function HomePage() {
                   return (
                     <div key={quiz.id}>
                       <Link href={`/quizzes/${quiz.id}`}>
-                        <div className="bg-white border border-2 border-black text-black relative rounded-lg aspect-[3/2]">
+                        <div className="border border-2 border-black hover:text-white hover:bg-[#003259] hover:border-[#003259] text-black relative rounded-lg aspect-[3/2]">
                           <div className="px-4 py-4">
                             <div>
-                              <span className="font-bold">Name:</span>{" "}
-                              {quiz.name}
+                              <span className="font-bold">Name:</span> {quiz.name}
                             </div>
                             <div>
-                              <span className="font-bold">Created:</span>{" "}
-                              {moment(quiz.createdAt).fromNow()}
+                              <span className="font-bold">Created:</span> {moment(quiz.createdAt).fromNow()}
                             </div>
                             <div>
                               <span className="font-bold">Language: </span>
-                              <span
-                                className={`mr-1 fi fi-${
-                                  getLanguageByTag(quiz.languageTag)
-                                    ?.countryCode
-                                }`}
-                              />
-                              <span className="">
-                                {getLanguageByTag(quiz.languageTag)?.name}
-                              </span>
+                              <span className={`mr-1 fi fi-${getLanguageByTag(quiz.languageTag)?.countryCode}`} />
+                              <span className="">{getLanguageByTag(quiz.languageTag)?.name}</span>
                             </div>
                             <div>
-                              <span className="font-bold">Sections:</span>{" "}
-                              {quiz.sections.length}
+                              <span className="font-bold">Sections:</span> {quiz.sections.length}
                             </div>
                             <div>
-                              <span className="font-bold">Exercises:</span>{" "}
-                              {getNumberOfExercises(quiz)}
+                              <span className="font-bold">Exercises:</span> {getNumberOfExercises(quiz)}
                             </div>
                           </div>
                         </div>

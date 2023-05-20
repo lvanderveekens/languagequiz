@@ -5,6 +5,7 @@ import { ExerciseDto, QuizSectionDto, SubmitAnswerResult, SubmitAnswersRequest, 
 import MultipleChoiceExercise from './multiple-choice-exercise';
 import SentenceCorrectionExercise from './sentence-correction-exercise';
 import "/node_modules/flag-icons/css/flag-icons.min.css";
+import Button from './button';
 
 type Props = {
   id: string
@@ -142,21 +143,13 @@ const Quiz: React.FC<Props> = ({
               </div>
             </div>
           ))}
-          <button
-            className="text-xl mb-8 text-white bg-[#003259] font-bold px-4 py-2 border-2 border-[#003259] rounded-lg px-3 disabled:opacity-50"
-            type="submit"
-            disabled={submitted}
-          >
+          <Button type="submit" variant="primary-dark" className="mb-8" disabled={submitted}>
             Check
-          </button>
+          </Button>
           {submitted && (
-            <button
-              className="ml-4 text-xl mb-8 text-[#003259] font-bold px-4 py-2 border-2 border-[#003259] rounded-lg px-3 disabled:opacity-50"
-              type="button"
-              onClick={resetForm}
-            >
+            <Button type="button" className="mb-8 ml-3" variant="secondary-dark" onClick={resetForm}>
               Reset
-            </button>
+            </Button>
           )}
         </form>
       </div>
