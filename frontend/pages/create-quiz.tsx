@@ -8,19 +8,17 @@ import { v4 as uuidv4 } from 'uuid';
 import "/node_modules/flag-icons/css/flag-icons.min.css";
 import QuizSectionInput from "@/components/quiz-section-input";
 
-const buildQuizSectionFormValues: () => QuizSectionFormValues = () => ({
+const getInitialQuizSectionFormValues: () => QuizSectionFormValues = () => ({
   _key: uuidv4(),
   exercises: [],
 });
 
-const initialQuizFormValues: QuizFormValues = {
-  sections: [
-    buildQuizSectionFormValues()
-  ],
-};
+const getInitialQuizFormValues: () => QuizFormValues = () => ({
+  sections: [getInitialQuizSectionFormValues()],
+});
 
 export default function CreateQuizPage() {
-  const [formValues, setFormValues] = useState<QuizFormValues>(initialQuizFormValues)
+  const [formValues, setFormValues] = useState<QuizFormValues>(getInitialQuizFormValues())
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const router = useRouter();
 
@@ -31,6 +29,10 @@ export default function CreateQuizPage() {
   const handleLanguageChange = (event: any) => {
     setFormValues({ ...formValues, languageTag: event.target.value });
   };
+
+  const resetForm = () => {
+    setFormValues(getInitialQuizFormValues())
+  }
 
   const handleSubmit = async (event: any) => {
     event.preventDefault();
@@ -47,10 +49,11 @@ export default function CreateQuizPage() {
         headers: { "Content-Type": "application/json" },
       });
 
+      const responseBody = await res.json();
       if (res.status == 201) {
-        router.push("/");
+        resetForm();
+        router.push(`/quizzes/${responseBody.id}`);
       } else {
-        const responseBody = await res.json();
         setErrorMessage(responseBody.error);
       }
     } catch (error) {
@@ -95,7 +98,7 @@ export default function CreateQuizPage() {
   }
 
   const handleAddSection = () => {
-    const newSection = buildQuizSectionFormValues(); 
+    const newSection = getInitialQuizSectionFormValues(); 
     setFormValues({ ...formValues, sections: [...(formValues.sections ?? []), newSection] });
   };
   
@@ -105,6 +108,8 @@ export default function CreateQuizPage() {
       sections: [...(prevState.sections ?? [])].filter((_, i) => i !== index),
     }));
   };
+
+  let exerciseCounterStart = 0;
 
   return (
     <div>
@@ -148,17 +153,21 @@ export default function CreateQuizPage() {
               </label>
             </div>
             {formValues.sections &&
-              formValues.sections.map((formValues: QuizSectionFormValues, i) => (
-                <QuizSectionInput
-                  className="border mb-4 p-4"
-                  key={formValues._key}
-                  name={formValues.name}
-                  onNameChange={handleSectionNameChange(i)}
-                  exercises={formValues.exercises}
-                  onExercisesChange={handleExercisesChange(i)}
-                  onRemove={i != 0 ? handleRemoveSection(i) : undefined}
-                />
-              ))}
+              formValues.sections.map((formValues: QuizSectionFormValues, i) => {
+                return (
+                  <QuizSectionInput
+                    className="border mb-4 p-4"
+                    index={i}
+                    exerciseCounterStart={exerciseCounterStart}
+                    key={formValues._key}
+                    name={formValues.name}
+                    onNameChange={handleSectionNameChange(i)}
+                    exercises={formValues.exercises}
+                    onExercisesChange={handleExercisesChange(i)}
+                    onRemove={i != 0 ? handleRemoveSection(i) : undefined}
+                  />
+                );
+              })}
 
             <div className="mb-4">
               <button

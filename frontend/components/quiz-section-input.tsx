@@ -7,6 +7,8 @@ import ExerciseInput from "./exercise-input";
 
 type QuizSectionInputProps = {
   className?: string
+  index: number
+  exerciseCounterStart: number
   name?: string
   onNameChange: (name: string) => void
   exercises?: ExerciseFormValues[]
@@ -16,6 +18,8 @@ type QuizSectionInputProps = {
 
 const QuizSectionInput: React.FC<QuizSectionInputProps> = ({
   className,
+  index,
+  exerciseCounterStart,
   name,
   onNameChange,
   exercises,
@@ -63,10 +67,10 @@ const QuizSectionInput: React.FC<QuizSectionInputProps> = ({
 
   return (
     <div className={`${className} w-full`}>
-      {onRemove == null && <div className="mb-4 text-xl font-bold">Section</div>}
+      {onRemove == null && <div className="mb-4 text-xl font-bold">Section {String.fromCharCode(65 + index)}</div>}
       {onRemove != null && (
         <div className="flex justify-between items-center mb-4">
-          <div className="text-xl font-bold">Section</div>
+          <div className="text-xl font-bold">Section {String.fromCharCode(65 + index)}</div>
           <button className="text-3xl" onClick={handleRemoveClick}>
             <GrFormClose />
           </button>
@@ -105,14 +109,17 @@ const QuizSectionInput: React.FC<QuizSectionInputProps> = ({
       </div>
 
       {exercises &&
-        exercises.map((formValues: ExerciseFormValues, i) => (
-          <ExerciseInput
-            key={formValues._key}
-            value={exercises[i]}
-            onChange={handleExerciseChange(i)}
-            onRemove={i != 0 ? removeExercise(i) : undefined}
-          />
-        ))}
+        exercises.map((formValues: ExerciseFormValues, i) => {
+          return (
+            <ExerciseInput
+              key={formValues._key}
+              exerciseCounter={exerciseCounterStart + i}
+              value={exercises[i]}
+              onChange={handleExerciseChange(i)}
+              onRemove={i != 0 ? removeExercise(i) : undefined}
+            />
+          );
+        })}
       {exerciseType && (
         <div className="mb-4">
           <button

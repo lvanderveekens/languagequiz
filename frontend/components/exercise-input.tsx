@@ -69,7 +69,7 @@ const ExerciseInput: React.FC<ExerciseInputProps> = ({
       {onRemove == null && <div className="mb-4 font-bold">Exercise</div>}
       {onRemove != null && (
         <div className="flex justify-between items-center mb-4">
-          <div className="text-xl font-bold">Exercise</div>
+          <div className="font-bold">Exercise</div>
           <button className="text-3xl" onClick={handleRemoveClick}>
             <GrFormClose />
           </button>
