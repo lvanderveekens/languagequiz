@@ -3,15 +3,17 @@ import { GrFormClose } from "react-icons/gr";
 import "/node_modules/flag-icons/css/flag-icons.min.css";
 
 type ExerciseInputProps = {
-  value: ExerciseFormValues
-  onChange: (value: ExerciseFormValues) => void
-  onRemove?: () => void
+  value: ExerciseFormValues;
+  onChange: (value: ExerciseFormValues) => void;
+  onRemove?: () => void;
+  exerciseNumber: number;
 };
 
 const ExerciseInput: React.FC<ExerciseInputProps> = ({
   value,
   onChange,
   onRemove,
+  exerciseNumber,
 }) => {
   const handleRemoveClick = (event: any) => {
     event.preventDefault();
@@ -66,10 +68,10 @@ const ExerciseInput: React.FC<ExerciseInputProps> = ({
 
   return (
     <div className="mb-4 p-4 border">
-      {onRemove == null && <div className="mb-4 font-bold">Exercise</div>}
+      {onRemove == null && <div className="mb-4 font-bold">Exercise {exerciseNumber}</div>}
       {onRemove != null && (
         <div className="flex justify-between items-center mb-4">
-          <div className="font-bold">Exercise</div>
+          <div className="font-bold">Exercise {exerciseNumber}</div>
           <button className="text-3xl" onClick={handleRemoveClick}>
             <GrFormClose />
           </button>

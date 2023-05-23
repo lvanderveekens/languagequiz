@@ -8,23 +8,23 @@ import ExerciseInput from "./exercise-input";
 type QuizSectionInputProps = {
   className?: string
   index: number
-  exerciseCounterStart: number
   name?: string
   onNameChange: (name: string) => void
   exercises?: ExerciseFormValues[]
   onExercisesChange: (exercises: ExerciseFormValues[]) => void
   onRemove?: () => void
+  exerciseNumberStart: number
 };
 
 const QuizSectionInput: React.FC<QuizSectionInputProps> = ({
   className,
   index,
-  exerciseCounterStart,
   name,
   onNameChange,
   exercises,
   onExercisesChange,
   onRemove,
+  exerciseNumberStart,
 }) => {
   const [exerciseType, setExerciseType] = useState<ExerciseType | null>(null);
 
@@ -113,10 +113,10 @@ const QuizSectionInput: React.FC<QuizSectionInputProps> = ({
           return (
             <ExerciseInput
               key={formValues._key}
-              exerciseCounter={exerciseCounterStart + i}
               value={exercises[i]}
               onChange={handleExerciseChange(i)}
               onRemove={i != 0 ? removeExercise(i) : undefined}
+              exerciseNumber={exerciseNumberStart + i}
             />
           );
         })}

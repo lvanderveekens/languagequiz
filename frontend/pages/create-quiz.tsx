@@ -22,6 +22,8 @@ export default function CreateQuizPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const router = useRouter();
 
+  const [exerciseCounter, setExerciseCounter] = useState<number>(0)
+
   const handleNameChange = (event: any) => {
     setFormValues({ ...formValues, name: event.target.value });
   };
@@ -107,9 +109,20 @@ export default function CreateQuizPage() {
       ...prevState,
       sections: [...(prevState.sections ?? [])].filter((_, i) => i !== index),
     }));
-  };
 
-  let exerciseCounterStart = 0;
+  };
+  const getExerciseNumberStart = (sectionIndex: number) => {
+    let exerciseNumberStart = 1
+    let sections = formValues.sections ?? []
+    for (let i = 0; i < sections.length; i++) {
+      if (sectionIndex === i) {
+        break;
+      } else {
+        exerciseNumberStart += sections[i].exercises?.length ?? 0
+      }
+    }
+    return exerciseNumberStart
+  };
 
   return (
     <div>
@@ -154,19 +167,19 @@ export default function CreateQuizPage() {
             </div>
             {formValues.sections &&
               formValues.sections.map((formValues: QuizSectionFormValues, i) => {
-                return (
-                  <QuizSectionInput
-                    className="border mb-4 p-4"
-                    index={i}
-                    exerciseCounterStart={exerciseCounterStart}
-                    key={formValues._key}
-                    name={formValues.name}
-                    onNameChange={handleSectionNameChange(i)}
-                    exercises={formValues.exercises}
-                    onExercisesChange={handleExercisesChange(i)}
-                    onRemove={i != 0 ? handleRemoveSection(i) : undefined}
-                  />
-                );
+              return (
+                <QuizSectionInput
+                  className="border mb-4 p-4"
+                  index={i}
+                  key={formValues._key}
+                  name={formValues.name}
+                  onNameChange={handleSectionNameChange(i)}
+                  exercises={formValues.exercises}
+                  onExercisesChange={handleExercisesChange(i)}
+                  onRemove={i != 0 ? handleRemoveSection(i) : undefined}
+                  exerciseNumberStart={getExerciseNumberStart(i)}
+                />
+              );
               })}
 
             <div className="mb-4">
