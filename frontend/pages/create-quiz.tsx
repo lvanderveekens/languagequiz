@@ -8,19 +8,21 @@ import "/node_modules/flag-icons/css/flag-icons.min.css";
 import Button from "@/components/button";
 import { GrFormClose } from "react-icons/gr";
 
+function buildExerciseFormValues(type: ExerciseType): ExerciseFormValues {
+  return {
+    _key: uuidv4(),
+    type: type,
+  };
+};
 
-const getInitialQuizSectionFormValues: () => QuizSectionFormValues = () => ({
+const buildQuizSectionFormValues: () => QuizSectionFormValues = () => ({
   _key: uuidv4(),
-  exercises: [
-    {
-      _key: uuidv4(),
-    },
-  ],
+  exercises: [],
 });
 
 const initialQuizFormValues: QuizFormValues = {
   sections: [
-    getInitialQuizSectionFormValues()
+    buildQuizSectionFormValues()
   ],
 };
 
@@ -100,7 +102,7 @@ export default function CreateQuizPage() {
   }
 
   const handleAddSection = () => {
-    const newSection = getInitialQuizSectionFormValues(); 
+    const newSection = buildQuizSectionFormValues(); 
     setFormValues({ ...formValues, sections: [...(formValues.sections ?? []), newSection] });
   };
   
@@ -138,7 +140,7 @@ export default function CreateQuizPage() {
                 <div className="">Language</div>
                 <div className="flex">
                   <select
-                    className="mr-1 w-full"
+                    className="w-full"
                     value={formValues.languageTag}
                     onChange={handleLanguageChange}
                     required
@@ -154,13 +156,6 @@ export default function CreateQuizPage() {
                         </option>
                       ))}
                   </select>
-                  {formValues.languageTag && (
-                    <span
-                      className={`border box-content text-2xl mr-1 fi fi-${
-                        getLanguageByTag(formValues.languageTag)?.countryCode
-                      }`}
-                    />
-                  )}
                 </div>
               </label>
             </div>
@@ -180,7 +175,7 @@ export default function CreateQuizPage() {
             <div className="mb-4">
               <button
                 type="button"
-                className="border p-4 w-full px-3 flex items-center justify-center"
+                className="border p-4 w-full px-3 flex items-center justify-center hover:border-black"
                 onClick={handleAddSection}
               >
                 <span className="text-2xl mr-1">➕</span>
@@ -216,24 +211,37 @@ const QuizSectionInput: React.FC<QuizSectionInputProps> = ({
   onExercisesChange,
   onRemove,
 }) => {
+  const [exerciseType, setExerciseType] = useState<ExerciseType | null>(null);
 
   const handleRemoveClick = (event: any) => {
     event.preventDefault();
-    onRemove!()
-  }
+    onRemove!();
+  };
 
-  const handleAddExerciseClick = () => {
-    const newExercise = { _key: uuidv4() };
+  const addExercise = () => {
+    const newExercise = buildExerciseFormValues(exerciseType!);
     onExercisesChange([...(exercises ?? []), newExercise]);
   };
 
-  const handleExerciseChange =
-    (index: number) => (value: ExerciseFormValues) => {
-      const updatedExercises = [...(exercises ?? [])];
-      updatedExercises[index] = value;
+  const removeExercise = (index: number) => () => {
+    const updatedExercises = [...(exercises ?? [])];
+    updatedExercises.splice(index, 1);
+    onExercisesChange(updatedExercises);
+  };
 
-      onExercisesChange(updatedExercises);
-    };
+  const handleExerciseChange = (index: number) => (value: ExerciseFormValues) => {
+    const updatedExercises = [...(exercises ?? [])];
+    updatedExercises[index] = value;
+
+    onExercisesChange(updatedExercises);
+  };
+
+  const handleExerciseTypeChange = (event: any) => {
+    const exerciseType = event.target.value
+    setExerciseType(exerciseType);
+    const newExercise = buildExerciseFormValues(exerciseType);
+    onExercisesChange([newExercise]);
+  };
 
   return (
     <div className={`${className} w-full`}>
@@ -263,32 +271,42 @@ const QuizSectionInput: React.FC<QuizSectionInputProps> = ({
       <div className="mb-4">
         <label className="" htmlFor="choice">
           <div>Exercise type</div>
-          <select
-            // value={value.type}
-            // onChange={handleTypeChange}
-            required
-          >
-            <option value="">Select an exercise type</option>
+          <select value={exerciseType ?? ""} onChange={handleExerciseTypeChange} required>
+            <option selected disabled value="">
+              Select an exercise type
+            </option>
             {Object.values(ExerciseType)
               .filter((key) => isNaN(Number(key)))
               .map((exerciseType) => (
                 <option key={exerciseType} value={exerciseType}>
-                   {labelByExerciseType[exerciseType]}
+                  {labelByExerciseType[exerciseType]}
                 </option>
               ))}
           </select>
         </label>
       </div>
 
-      {/* {exercises &&
+      {exercises &&
         exercises.map((formValues: ExerciseFormValues, i) => (
-          <ExerciseInput key={formValues._key} value={exercises[i]} onChange={handleExerciseChange(i)} />
+          <ExerciseInput
+            key={formValues._key}
+            value={exercises[i]}
+            onChange={handleExerciseChange(i)}
+            onRemove={i != 0 ? removeExercise(i) : undefined}
+          />
         ))}
-      <div>
-        <button type="button" className="border border-black px-3" onClick={handleAddExerciseClick}>
-          Add exercise
-        </button>
-      </div> */}
+      {exerciseType && (
+        <div className="mb-4">
+          <button
+            type="button"
+            className="border p-4 w-full px-3 flex items-center justify-center hover:border-black"
+            onClick={addExercise}
+          >
+            <span className="text-2xl mr-1">➕</span>
+            Add exercise
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -296,99 +314,80 @@ const QuizSectionInput: React.FC<QuizSectionInputProps> = ({
 type ExerciseInputProps = {
   value: ExerciseFormValues
   onChange: (value: ExerciseFormValues) => void
+  onRemove?: () => void
 };
 
 const ExerciseInput: React.FC<ExerciseInputProps> = ({
   value,
   onChange,
+  onRemove,
 }) => {
-
-  const handleTypeChange = (event: any) => {
-    onChange({...value, type: event.target.value})
+  const handleRemoveClick = (event: any) => {
+    event.preventDefault();
+    onRemove!();
   };
 
-  if (!value.type) {
-    return (
-      <div className="border p-4">
-        Exercise
-        <div>
-          <label htmlFor="choice">Exercise type:</label>
-          <select
-            id="choice"
-            name="choice"
-            value={value.type}
-            onChange={handleTypeChange}
-            required
-          >
-            <option value="">Select an option</option>
-            {Object.values(ExerciseType)
-              .filter((key) => isNaN(Number(key)))
-              .map((exerciseType) => (
-                <option key={exerciseType} value={exerciseType}>{exerciseType}</option>
-              ))}
-          </select>
-        </div>
-      </div>
-    );
-  }
-
+  let exerciseInputComponent = null
   switch (value.type) {
     case ExerciseType.MultipleChoice:
-      return (
+      exerciseInputComponent = (
         <MultipleChoiceExerciseInput
           question={value.question}
           choices={value.choices}
           answer={value.answer}
           feedback={value.feedback}
-          onQuestionChange={(question: string) =>
-            onChange({ ...value, question: question })
-          }
-          onChoicesChange={(choices: string[]) =>
-            onChange({ ...value, choices: choices })
-          }
-          onAnswerChange={(answer: string) =>
-            onChange({ ...value, answer: answer })
-          }
-          onFeedbackChange={(feedback: string) =>
-            onChange({ ...value, feedback: feedback })
-          }
+          onQuestionChange={(question: string) => onChange({ ...value, question: question })}
+          onChoicesChange={(choices: string[]) => onChange({ ...value, choices: choices })}
+          onAnswerChange={(answer: string) => onChange({ ...value, answer: answer })}
+          onFeedbackChange={(feedback: string) => onChange({ ...value, feedback: feedback })}
         />
       );
+      break;
     case ExerciseType.FillInTheBlank:
-      return (
+      exerciseInputComponent = (
         <FillInTheBlankExerciseInput
           question={value.question}
           answer={value.answer}
           feedback={value.feedback}
-          onQuestionChange={(question: string) =>
-            onChange({ ...value, question: question })
-          }
-          onAnswerChange={(answer: string) =>
-            onChange({ ...value, answer: answer })
-          }
-          onFeedbackChange={(feedback: string) =>
-            onChange({ ...value, feedback: feedback })
-          }
+          onQuestionChange={(question: string) => onChange({ ...value, question: question })}
+          onAnswerChange={(answer: string) => onChange({ ...value, answer: answer })}
+          onFeedbackChange={(feedback: string) => onChange({ ...value, feedback: feedback })}
         />
       );
+      break;
     case ExerciseType.SentenceCorrection:
-      return <SentenceCorrectionExerciseInput 
-          sentence={value.sentence}
-          correctedSentence={value.correctedSentence}
-          feedback={value.feedback}
-          onSentenceChange={(sentence: string) =>
-            onChange({ ...value, sentence: sentence})
-          }
-          onCorrectedSentenceChange={(correctedSentence: string) =>
-            onChange({ ...value, correctedSentence: correctedSentence })
-          }
-          onFeedbackChange={(feedback: string) =>
-            onChange({ ...value, feedback: feedback })
-          }
-      />
+        exerciseInputComponent = (
+          <SentenceCorrectionExerciseInput
+            sentence={value.sentence}
+            correctedSentence={value.correctedSentence}
+            feedback={value.feedback}
+            onSentenceChange={(sentence: string) => onChange({ ...value, sentence: sentence })}
+            onCorrectedSentenceChange={(correctedSentence: string) =>
+              onChange({ ...value, correctedSentence: correctedSentence })
+            }
+            onFeedbackChange={(feedback: string) => onChange({ ...value, feedback: feedback })}
+          />
+        );
+        break;
     default:
-      return <p>Unknown exercise type</p>
+      return <p>Unknown exercise type</p>;
   }
+
+  return (
+    <div className="mb-4 p-4 border">
+      {onRemove == null && <div className="mb-4 font-bold">Exercise</div>}
+      {onRemove != null && (
+        <div className="flex justify-between items-center mb-4">
+          <div className="text-xl font-bold">Exercise</div>
+          <button className="text-3xl" onClick={handleRemoveClick}>
+            <GrFormClose />
+          </button>
+        </div>
+      )}
+      <div>{exerciseInputComponent}</div>
+    </div>
+  );
+
 }
 
 type MultipleChoiceExerciseInputProps = {
@@ -421,13 +420,13 @@ const MultipleChoiceExerciseInput: React.FC<MultipleChoiceExerciseInputProps> = 
   };
 
   return (
-    <div className="border border-black">
-      Multiple Choice Exercise
-      <div>
+    <div className="">
+      <div className="mb-4">
         <label>
-          <span className="mr-3">Question</span>
+          <div className="">Question</div>
           <input
-            className="border border-black"
+            className="w-full border"
+            placeholder="Enter a question"
             type="text"
             value={question ?? ""}
             onChange={(e) => onQuestionChange(e.target.value)}
@@ -435,11 +434,12 @@ const MultipleChoiceExerciseInput: React.FC<MultipleChoiceExerciseInputProps> = 
           />
         </label>
       </div>
-      <div>
+      <div className="mb-4">
         <label>
-          <span className="mr-3">Choice 1</span>
+          <div className="">Choice 1</div>
           <input
-            className="border border-black"
+            className="w-full border"
+            placeholder="Enter first choice"
             type="text"
             value={choices?.[0] ?? ""}
             onChange={handleChoiceChange(0)}
@@ -447,11 +447,12 @@ const MultipleChoiceExerciseInput: React.FC<MultipleChoiceExerciseInputProps> = 
           />
         </label>
       </div>
-      <div>
+      <div className="mb-4">
         <label>
-          <span className="mr-3">Choice 2</span>
+          <div className="">Choice 2</div>
           <input
-            className="border border-black"
+            className="w-full border"
+            placeholder="Enter second choice"
             type="text"
             value={choices?.[1] ?? ""}
             onChange={handleChoiceChange(1)}
@@ -459,33 +460,38 @@ const MultipleChoiceExerciseInput: React.FC<MultipleChoiceExerciseInputProps> = 
           />
         </label>
       </div>
-      <div>
+      <div className="mb-4">
         <label>
-          <span className="mr-3">Choice 3</span>
+          <div className="">Choice 3</div>
           <input
-            className="border border-black"
+            className="w-full border"
+            placeholder="Enter third choice"
             type="text"
             value={choices?.[2] ?? ""}
             onChange={handleChoiceChange(2)}
+            required
           />
         </label>
       </div>
-      <div>
+      <div className="mb-4">
         <label>
-          <span className="mr-3">Choice 4</span>
+          <div className="">Choice 4</div>
           <input
-            className="border border-black"
+            className="w-full border"
+            placeholder="Enter fourth choice"
             type="text"
             value={choices?.[3] ?? ""}
             onChange={handleChoiceChange(3)}
+            required
           />
         </label>
       </div>
-      <div>
+      <div className="mb-4">
         <label>
-          <span className="mr-3">Answer</span>
+          <div className="mr-3">Answer</div>
           <input
-            className="border border-black"
+            className="w-full border"
+            placeholder="Enter the answer"
             type="text"
             value={answer ?? ""}
             onChange={(e) => onAnswerChange(e.target.value)}
@@ -495,9 +501,10 @@ const MultipleChoiceExerciseInput: React.FC<MultipleChoiceExerciseInputProps> = 
       </div>
       <div>
         <label>
-          <span className="mr-3">Feedback</span>
+          <div className="mr-3">Feedback (optional)</div>
           <input
-            className="border border-black"
+            className="w-full border"
+            placeholder="Enter feedback"
             type="text"
             value={feedback ?? ""}
             onChange={(e) => onFeedbackChange(e.target.value)}
@@ -527,13 +534,13 @@ const FillInTheBlankExerciseInput: React.FC<FillInTheBlankExerciseInputProps> = 
 }) => {
 
   return (
-    <div className="border border-black">
-      Fill In The Blank Exercise
-      <div>
+    <div className="">
+      <div className="mb-4">
         <label>
-          <span className="mr-3">Question</span>
+          <div className="">Question</div>
           <input
-            className="border border-black"
+            className="border"
+            placeholder="Enter a question"
             type="text"
             value={question ?? ""}
             onChange={(e) => onQuestionChange(e.target.value)}
@@ -541,11 +548,12 @@ const FillInTheBlankExerciseInput: React.FC<FillInTheBlankExerciseInputProps> = 
           />
         </label>
       </div>
-      <div>
+      <div className="mb-4">
         <label>
-          <span className="mr-3">Answer</span>
+          <div className="">Answer</div>
           <input
-            className="border border-black"
+            className="border"
+            placeholder="Enter an answer"
             type="text"
             value={answer ?? ""}
             onChange={(e) => onAnswerChange(e.target.value)}
@@ -553,11 +561,12 @@ const FillInTheBlankExerciseInput: React.FC<FillInTheBlankExerciseInputProps> = 
           />
         </label>
       </div>
-      <div>
+      <div className="mb-4">
         <label>
-          <span className="mr-3">Feedback</span>
+          <div className="">Feedback (optional)</div>
           <input
-            className="border border-black"
+            className="w-full border"
+            placeholder="Enter feedback"
             type="text"
             value={feedback ?? ""}
             onChange={(e) => onFeedbackChange(e.target.value)}
@@ -587,35 +596,39 @@ const SentenceCorrectionExerciseInput: React.FC<SentenceCorrectionExerciseInputP
 }) => {
 
   return (
-    <div className="border border-black">
-      Sentence Correction Exercise
-      <div>
+    <div className="">
+      <div className="mb-4">
         <label>
-          <span className="mr-3">Sentence</span>
+          <span className="">Sentence</span>
           <input
-            className="border border-black"
+            className="w-full border"
+            placeholder="Enter a sentence"
             type="text"
             value={sentence ?? ""}
             onChange={(e) => onSentenceChange(e.target.value)}
+            required
           />
         </label>
       </div>
-      <div>
+      <div className="mb-4">
         <label>
-          <span className="mr-3">Corrected sentence</span>
+          <span className="">Corrected sentence</span>
           <input
-            className="border border-black"
+            className="w-full border"
+            placeholder="Enter the corrected sentence"
             type="text"
             value={correctedSentence ?? ""}
             onChange={(e) => onCorrectedSentenceChange(e.target.value)}
+            required
           />
         </label>
       </div>
-      <div>
+      <div className="mb-4">
         <label>
-          <span className="mr-3">Feedback</span>
+          <span className="">Feedback (optional)</span>
           <input
-            className="border border-black"
+            className="w-full border"
+            placeholder="Enter feedback"
             type="text"
             value={feedback ?? ""}
             onChange={(e) => onFeedbackChange(e.target.value)}
