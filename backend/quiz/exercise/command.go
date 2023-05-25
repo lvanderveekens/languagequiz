@@ -3,9 +3,10 @@ package exercise
 import (
 	"errors"
 	"fmt"
+	"languagequiz/slices"
 	"regexp"
 
-	"golang.org/x/exp/slices"
+	xslices "golang.org/x/exp/slices"
 )
 
 var blankRegex = regexp.MustCompile(`______`)
@@ -34,8 +35,12 @@ func NewCreateMultipleChoiceExerciseCommand(
 	if len(choices) != 4 {
 		return nil, fmt.Errorf("expected 4 choices, found: %d", len(choices))
 	}
-	if !slices.Contains(choices, answer) {
-		return nil, fmt.Errorf("choices do not contain answer")
+	duplicateChoice := slices.FindDuplicate(choices)
+	if duplicateChoice != nil {
+		return nil, fmt.Errorf("duplicate choice found: %s", *duplicateChoice)
+	}
+	if !xslices.Contains(choices, answer) {
+		return nil, fmt.Errorf("answer is not a choice")
 	}
 
 	return &CreateMultipleChoiceExerciseCommand{
@@ -62,10 +67,10 @@ func NewCreateFillInTheBlankExerciseCommand(
 ) (*CreateFillInTheBlankExerciseCommand, error) {
 	blanks := blankRegex.FindAllStringSubmatch(question, -1)
 	if len(blanks) == 0 {
-		return nil, errors.New("no blank found in question")
+		return nil, errors.New("no blank '______' found in question")
 	}
 	if len(blanks) > 1 {
-		return nil, errors.New("more than one blank found in question")
+		return nil, errors.New("more than one blank '______' found in question")
 	}
 
 	return &CreateFillInTheBlankExerciseCommand{

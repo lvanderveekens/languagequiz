@@ -3,10 +3,11 @@ import languages from "@/components/languages";
 import { CreateQuizRequest, ExerciseFormValues, QuizFormValues, QuizSectionFormValues } from "@/components/models";
 import Navbar from "@/components/navbar";
 import { useRouter } from 'next/router';
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { v4 as uuidv4 } from 'uuid';
 import "/node_modules/flag-icons/css/flag-icons.min.css";
 import QuizSectionInput from "@/components/quiz-section-input";
+import { FaExclamationCircle } from 'react-icons/fa';
 
 const getInitialQuizSectionFormValues: () => QuizSectionFormValues = () => ({
   _key: uuidv4(),
@@ -22,7 +23,7 @@ export default function CreateQuizPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const router = useRouter();
 
-  const [exerciseCounter, setExerciseCounter] = useState<number>(0)
+  const errorContainerRef = useRef<HTMLDivElement>(null);
 
   const handleNameChange = (event: any) => {
     setFormValues({ ...formValues, name: event.target.value });
@@ -35,6 +36,15 @@ export default function CreateQuizPage() {
   const resetForm = () => {
     setFormValues(getInitialQuizFormValues())
   }
+
+  useEffect(() => {
+    if (!errorMessage) {
+      return;
+    }
+    if (errorContainerRef.current) {
+      errorContainerRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [errorMessage]);
 
   const handleSubmit = async (event: any) => {
     event.preventDefault();
@@ -167,22 +177,22 @@ export default function CreateQuizPage() {
             </div>
             {formValues.sections &&
               formValues.sections.map((formValues: QuizSectionFormValues, i) => {
-              return (
-                <QuizSectionInput
-                  className="border mb-4 p-4"
-                  index={i}
-                  key={formValues._key}
-                  name={formValues.name}
-                  onNameChange={handleSectionNameChange(i)}
-                  exercises={formValues.exercises}
-                  onExercisesChange={handleExercisesChange(i)}
-                  onRemove={i != 0 ? handleRemoveSection(i) : undefined}
-                  exerciseNumberStart={getExerciseNumberStart(i)}
-                />
-              );
+                return (
+                  <QuizSectionInput
+                    className="border mb-4 p-4"
+                    index={i}
+                    key={formValues._key}
+                    name={formValues.name}
+                    onNameChange={handleSectionNameChange(i)}
+                    exercises={formValues.exercises}
+                    onExercisesChange={handleExercisesChange(i)}
+                    onRemove={i != 0 ? handleRemoveSection(i) : undefined}
+                    exerciseNumberStart={getExerciseNumberStart(i)}
+                  />
+                );
               })}
 
-            <div className="mb-4">
+            <div className="mb-8">
               <button
                 type="button"
                 className="border p-4 w-full px-3 flex items-center justify-center hover:border-black"
@@ -193,11 +203,18 @@ export default function CreateQuizPage() {
               </button>
             </div>
 
-            <Button className="mb-4" variant="primary-dark" type="submit">
+            <Button className="mb-8" variant="primary-dark" type="submit">
               Create
             </Button>
           </form>
-          {errorMessage && <div>Error: {errorMessage}</div>}
+          {errorMessage && (
+            <div ref={errorContainerRef} className="mb-8">
+              <span className="items-center px-4 py-2 border-2 border-red-400 rounded-lg bg-red-100 inline-flex">
+                <span className="mr-2 text-xl text-red-500"><FaExclamationCircle /></span>
+                Error: {errorMessage}
+              </span>
+            </div>
+          )}
         </div>
       </div>
     </div>
