@@ -1,4 +1,5 @@
 import { ExerciseFormValues, ExerciseType } from "@/components/models";
+import { FaInfoCircle } from "react-icons/fa";
 import { GrFormClose } from "react-icons/gr";
 import "/node_modules/flag-icons/css/flag-icons.min.css";
 
@@ -232,7 +233,7 @@ const FillInTheBlankExerciseInput: React.FC<FillInTheBlankExerciseInputProps> = 
         <label>
           <div className="">Question</div>
           <input
-            className="border"
+            className="w-full border"
             placeholder="Enter a question"
             type="text"
             value={question ?? ""}
@@ -240,12 +241,20 @@ const FillInTheBlankExerciseInput: React.FC<FillInTheBlankExerciseInputProps> = 
             required
           />
         </label>
+        <div className="mt-4">
+          <span className="items-center px-4 py-2 border-2 rounded-lg inline-flex">
+            <span className="mr-2 text-xl">
+              <FaInfoCircle />
+            </span>
+            The question should include a blank (______).
+          </span>
+        </div>
       </div>
       <div className="mb-4">
         <label>
           <div className="">Answer</div>
           <input
-            className="border"
+            className="w-full border"
             placeholder="Enter an answer"
             type="text"
             value={answer ?? ""}
