@@ -47,7 +47,9 @@ func main() {
 	quizStorage := postgres.NewQuizStorage(dbpool)
 	quizHandler := api.NewQuizHandler(quizStorage)
 
-	var handlers = api.NewHandlers(quizHandler)
+	feedbackHandler := api.NewFeedbackHandler()
+
+	var handlers = api.NewHandlers(quizHandler, feedbackHandler)
 
 	var server = api.NewServer(handlers)
 	log.Fatal(server.Start(8888))
