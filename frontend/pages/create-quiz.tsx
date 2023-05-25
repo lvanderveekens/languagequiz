@@ -63,8 +63,8 @@ export default function CreateQuizPage() {
 
       const responseBody = await res.json();
       if (res.status == 201) {
-        resetForm();
         router.push(`/quizzes/${responseBody.id}`);
+        resetForm();
       } else {
         setErrorMessage(responseBody.error);
       }
