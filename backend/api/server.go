@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	cors "github.com/rs/cors/wrapper/gin"
 )
 
 type Server struct {
@@ -20,6 +21,11 @@ func NewServer(handlers *Handlers) *Server {
 
 func (s *Server) Start(port int) error {
 	r := gin.Default()
+
+	r.Use(cors.New(cors.Options{
+		AllowedOrigins: []string{"http://localhost:3000"},
+		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+	}))
 
 	r.GET("/v1/quizzes", createHandlerFunc(s.handlers.quiz.GetQuizzes))
 	r.GET("/v1/quizzes/:id", createHandlerFunc(s.handlers.quiz.GetQuizByID))

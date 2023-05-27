@@ -55,7 +55,7 @@ export default function CreateQuizPage() {
       const req = mapToRequest(formValues);
       console.log(`Request: ${JSON.stringify(req)}`);
 
-      const res = await fetch(`/api/quizzes`, {
+      const res = await fetch(`http://localhost:8888/v1/quizzes`, {
         method: "POST",
         body: JSON.stringify(req),
         headers: { "Content-Type": "application/json" },
