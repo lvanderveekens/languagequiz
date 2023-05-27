@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"languagequiz/api"
@@ -14,40 +15,49 @@ import (
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"github.com/joho/godotenv"
 )
 
 func main() {
+	err := godotenv.Load(".env")
+	if err != nil {
+		log.Fatal("Failed loading .env file: ", err)
+	}
+
 	zoneName, _ := time.Now().Zone()
-	fmt.Printf("Configured time zone: %s", zoneName)
+	fmt.Println("Configured time zone: ", zoneName)
 
 	connString := "postgres://postgres:postgres@localhost:15432/app?sslmode=disable"
 	config, err := pgxpool.ParseConfig(connString)
 	if err != nil {
-		fmt.Println("Error parsing connection config:", err)
-		return
+		log.Fatal("Error parsing connection config: ", err)
 	}
 
 	dbpool, err := pgxpool.NewWithConfig(context.Background(), config)
 	if err != nil {
-		fmt.Println("Unable to create connection pool:", err)
-		return
+		log.Fatal("Unable to create connection pool: ", err)
 	}
 	defer dbpool.Close()
 
-	fmt.Println("Successfully connected to database!")
+	err = dbpool.Ping(context.Background())
+	if err != nil {
+		log.Fatal("Error pinging the database: ", err)
+	}
+
+	fmt.Println("Database connection successful!")
 
 	m, err := migrate.New("file://migrations", connString)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Failed to create Migrate instance: ", err)
 	}
 	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
-		log.Fatal(err)
+		log.Fatal("Failed to migrate the database: ", err)
 	}
 
 	quizStorage := postgres.NewQuizStorage(dbpool)
 	quizHandler := api.NewQuizHandler(quizStorage)
 
-	feedbackHandler := api.NewFeedbackHandler()
+	feedbackHandler := api.NewFeedbackHandler(os.Getenv("DISCORD_BOT_TOKEN"), os.Getenv("DISCORD_FEEDBACK_CHANNEL_ID"))
 
 	var handlers = api.NewHandlers(quizHandler, feedbackHandler)
 
