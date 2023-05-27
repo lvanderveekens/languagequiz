@@ -1,16 +1,13 @@
-import { Inter } from 'next/font/google'
+import Button from '@/components/button'
+import FeedbackButton from '@/components/feedback-button'
+import { getLanguageByTag } from '@/components/languages'
+import Navbar from '@/components/navbar'
+import moment from 'moment'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
 import { QuizDto, getNumberOfExercises } from '../components/models'
-import { getLanguageByTag } from '@/components/languages'
-import "/node_modules/flag-icons/css/flag-icons.min.css";
-import moment from 'moment';
-import Button from '@/components/button'
-import Navbar from '@/components/navbar'
-
-
-const inter = Inter({ subsets: ['latin'] })
+import "/node_modules/flag-icons/css/flag-icons.min.css"
 
 export default function HomePage() {
   const router = useRouter();
@@ -29,6 +26,7 @@ export default function HomePage() {
     <main>
       <div id="hero">
         <Navbar className="bg-transparent" />
+        <FeedbackButton />
 
         <div className="text-center">
           <div className="container mx-auto text-white">

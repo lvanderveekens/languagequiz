@@ -31,7 +31,7 @@ func (s *Server) Start(port int) error {
 	r.GET("/v1/quizzes/:id", createHandlerFunc(s.handlers.quiz.GetQuizByID))
 	r.POST("/v1/quizzes", createHandlerFunc(s.handlers.quiz.CreateQuiz))
 	r.POST("/v1/quizzes/:id/answers", createHandlerFunc(s.handlers.quiz.SubmitAnswers))
-	r.POST("/v1/feedback", createHandlerFunc(s.handlers.feedback.ReceiveFeedback))
+	r.POST("/v1/feedback", createHandlerFunc(s.handlers.feedback.SubmitFeedback))
 
 	return r.Run(":" + strconv.Itoa(port))
 }

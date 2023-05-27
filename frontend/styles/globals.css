@@ -9,6 +9,12 @@
         @apply border;
     }
 
+    textarea {
+        padding-left: 4px;
+        padding-right: 4px;
+        @apply border;
+    }
+
     select {
         height: 26px;
         @apply border;

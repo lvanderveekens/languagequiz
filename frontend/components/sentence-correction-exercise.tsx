@@ -1,5 +1,5 @@
 import React, { ChangeEvent } from 'react';
-import Feedback from './feedback';
+import ExerciseFeedback from './exercise-feedback';
 
 type Props = {
   index: number
@@ -46,7 +46,7 @@ const SentenceCorrectionExercise: React.FC<Props> = ({
           <div className="text-red-500">Correct answer: {correctAnswer}</div>
         )}
       </div>
-      {feedback && !answeredCorrectly && <Feedback feedback={feedback} />}
+      {feedback && !answeredCorrectly && <ExerciseFeedback text={feedback} />}
     </div>
   );
 };
