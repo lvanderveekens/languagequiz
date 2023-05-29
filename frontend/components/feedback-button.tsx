@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import FeedbackModal from './feedback-modal';
+import { useRouter } from 'next/router';
 
 type Props = {
 };
 
 const FeedbackButton: React.FC<Props> = ({}) => {
+  const router = useRouter();
 
   const [showModal, setShowModal] = useState<boolean>(false)
 
@@ -19,7 +21,8 @@ const FeedbackButton: React.FC<Props> = ({}) => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          "text": text
+          "text": text,
+          "pagePath": router.asPath,
         }),
       });
     } catch (error) {

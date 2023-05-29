@@ -78,7 +78,7 @@ const FeedbackModal: React.FC<Props> = ({ className = "", onSubmit, onClose }) =
             </label>
           </div>
           <Button type="submit" variant="primary-dark" className="ml-auto" disabled={submitting}>
-            Send
+            Submit
           </Button>
         </form>
         {submitted && <div className="mt-4">Thanks for your feedback! 😀</div>}

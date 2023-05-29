@@ -22,12 +22,16 @@ func NewFeedbackHandler(discordBotToken, discordFeedbackChannelID string) *Feedb
 }
 
 type submitFeedbackRequest struct {
-	Text string `json:"text"`
+	Text     string `json:"text"`
+	PagePath string `json:"pagePath"`
 }
 
 func (r *submitFeedbackRequest) validate() error {
 	if r.Text == "" {
 		return errors.New("field 'text' is missing")
+	}
+	if r.PagePath == "" {
+		return errors.New("field 'pagePath' is missing")
 	}
 	return nil
 }
@@ -48,7 +52,9 @@ func (h *FeedbackHandler) SubmitFeedback(c *gin.Context) error {
 		return err
 	}
 
-	_, err = discord.ChannelMessageSend(h.DiscordFeedbackChannelID, "Received feedback: "+req.Text)
+	msg := "Received feedback\nText: " + req.Text + "\nPage: " + req.PagePath
+
+	_, err = discord.ChannelMessageSend(h.DiscordFeedbackChannelID, msg)
 	if err != nil {
 		return err
 	}
