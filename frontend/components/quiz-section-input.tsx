@@ -93,8 +93,8 @@ const QuizSectionInput: React.FC<QuizSectionInputProps> = ({
       <div className="mb-4">
         <label className="" htmlFor="choice">
           <div>Exercise type</div>
-          <select value={exerciseType ?? ""} onChange={handleExerciseTypeChange} required>
-            <option selected disabled value="">
+          <select className="w-full" value={exerciseType ?? ""} onChange={handleExerciseTypeChange} required>
+            <option disabled value="">
               Select an exercise type
             </option>
             {Object.values(ExerciseType)

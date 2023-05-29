@@ -17,7 +17,6 @@ export interface QuizSectionDto {
 }
 
 export interface ExerciseDto {
-  id: string
   type: string
   question?: string
   choices?: string[]

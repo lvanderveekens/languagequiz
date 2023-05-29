@@ -8,6 +8,7 @@ import { v4 as uuidv4 } from 'uuid';
 import "/node_modules/flag-icons/css/flag-icons.min.css";
 import QuizSectionInput from "@/components/quiz-section-input";
 import { FaExclamationCircle } from 'react-icons/fa';
+import FeedbackButton from "@/components/feedback-button";
 
 const getInitialQuizSectionFormValues: () => QuizSectionFormValues = () => ({
   _key: uuidv4(),
@@ -137,6 +138,8 @@ export default function CreateQuizPage() {
   return (
     <div>
       <Navbar className="mb-8" />
+      <FeedbackButton />
+
       <div className="container mx-auto">
         <div className="max-w-screen-sm">
           <form onSubmit={handleSubmit}>
@@ -160,8 +163,8 @@ export default function CreateQuizPage() {
               <label className="">
                 <div className="">Language</div>
                 <div className="flex">
-                  <select className="w-full" value={formValues.languageTag} onChange={handleLanguageChange} required>
-                    <option selected disabled value="">
+                  <select className="w-full" value={formValues.languageTag ?? ""} onChange={handleLanguageChange} required>
+                    <option disabled value="">
                       Select a language
                     </option>
                     {languages
@@ -210,7 +213,9 @@ export default function CreateQuizPage() {
           {errorMessage && (
             <div ref={errorContainerRef} className="mb-8">
               <span className="items-center px-4 py-2 border-2 border-red-400 rounded-lg bg-red-100 inline-flex">
-                <span className="mr-2 text-xl text-red-500"><FaExclamationCircle /></span>
+                <span className="mr-2 text-xl text-red-500">
+                  <FaExclamationCircle />
+                </span>
                 Error: {errorMessage}
               </span>
             </div>

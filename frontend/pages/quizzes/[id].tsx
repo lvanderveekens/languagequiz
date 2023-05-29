@@ -1,4 +1,5 @@
 
+import FeedbackButton from '@/components/feedback-button';
 import { QuizDto } from '@/components/models';
 import Navbar from '@/components/navbar';
 import Quiz from '@/components/quiz';
@@ -24,6 +25,8 @@ export default function QuizPage() {
   return (
     <div>
       <Navbar className="mb-8" />
+      <FeedbackButton />
+
       <div className="container mx-auto">
         <div className="max-w-screen-sm">
           {quiz && (

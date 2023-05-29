@@ -101,7 +101,6 @@ const Quiz: React.FC<Props> = ({
                       case "multipleChoice":
                         exerciseComponent = (
                           <MultipleChoiceExercise
-                            key={exercise.question!}
                             index={exerciseIndex}
                             question={exercise.question!}
                             choices={exercise.choices!}
@@ -116,7 +115,6 @@ const Quiz: React.FC<Props> = ({
                       case "fillInTheBlank":
                         exerciseComponent = (
                           <FillInTheBlankExercise
-                            key={exercise.question!}
                             index={exerciseIndex}
                             question={exercise.question!}
                             answer={answers[exerciseIndex]}
@@ -130,7 +128,6 @@ const Quiz: React.FC<Props> = ({
                       case "sentenceCorrection":
                         exerciseComponent = (
                           <SentenceCorrectionExercise
-                            key={exercise.sentence!}
                             index={exerciseIndex}
                             sentence={exercise.sentence!}
                             answer={answers[exerciseIndex]}
@@ -144,7 +141,7 @@ const Quiz: React.FC<Props> = ({
                       default:
                         exerciseComponent = <p>Unexpected exercise type: {exercise.type}</p>;
                     }
-                    return <div className="mb-4">{exerciseComponent}</div>;
+                    return <div key={exerciseIndex} className="mb-4">{exerciseComponent}</div>;
                   })}
               </div>
             </div>

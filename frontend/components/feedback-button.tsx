@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
-import FeedbackForm from './feedback-form';
+import FeedbackModal from './feedback-modal';
 
 type Props = {
-  // text: string;
 };
 
 const FeedbackButton: React.FC<Props> = ({}) => {
 
-  const [showForm, setShowForm] = useState<boolean>(false)
+  const [showModal, setShowModal] = useState<boolean>(false)
 
-  const handleClick = () => {
-    setShowForm(true)
-  }
+  const handleClick = (event: any) => {
+    event.stopPropagation();
+    setShowModal(!showModal);
+  };
 
   const handleSubmit = async (text: string) => {
     try {
@@ -28,21 +28,14 @@ const FeedbackButton: React.FC<Props> = ({}) => {
   }
 
   return (
-    <div className="fixed bottom-0 right-4 z-50 flex flex-col">
-      {showForm && (
-        <FeedbackForm
-          className="mb-4"
-          onSubmit={handleSubmit}
-          onClose={() => setShowForm(false)}
-        />
-      )}
-      <button
-        className="text-white font-bold bg-[#003259] border-x-2 border-t-2 border-[#003259] 
-          hover:text-[#003259] hover:bg-white rounded-t-lg px-4 py-2 ml-auto"
-        onClick={handleClick}
-      >
-        Feedback
-      </button>
+    <div className="">
+      {showModal && <FeedbackModal onSubmit={handleSubmit} onClose={() => setShowModal(false)} />}
+      <div className="fixed top-3/4 right-0 transform origin-bottom-left translate-x-full -rotate-90 z-10">
+        <button className="text-white font-bold bg-black border-black border-x-2 border-t-2 
+          hover:text-black hover:bg-white rounded-t-lg px-4 py-1 " onClick={handleClick}>
+          Feedback
+        </button>
+      </div>
     </div>
   );
 };

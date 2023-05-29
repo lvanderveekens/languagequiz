@@ -52,7 +52,7 @@ export default function HomePage() {
       <div className="container mx-auto text-black">
         <div id="latest-quizzes" className="my-8">
           <h2 className="text-2xl font-bold mb-8">Latest Quizzes</h2>
-          <div className="grid grid-cols-4 gap-4">
+          <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {quizzes.length > 0 &&
               quizzes
                 .sort((a, b) => {
@@ -64,7 +64,7 @@ export default function HomePage() {
                   return (
                     <div key={quiz.id}>
                       <Link href={`/quizzes/${quiz.id}`}>
-                        <div className="border border-2 border-black hover:text-white hover:bg-[#003259] hover:border-[#003259] text-black relative rounded-lg aspect-[3/2]">
+                        <div className="border border-2 hover:text-white hover:bg-[#003259] hover:border-[#003259] text-black relative rounded-lg aspect-[3/2]">
                           <div className="px-4 py-4">
                             <div>
                               <span className="font-bold">Name:</span> {quiz.name}
