@@ -27,7 +27,7 @@ func main() {
 	zoneName, _ := time.Now().Zone()
 	fmt.Println("Configured time zone: ", zoneName)
 
-	connString := "postgres://postgres:postgres@localhost:15432/app?sslmode=disable"
+	connString := os.Getenv("POSTGRES_CONN_STRING")
 	config, err := pgxpool.ParseConfig(connString)
 	if err != nil {
 		log.Fatal("Error parsing connection config: ", err)
