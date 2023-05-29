@@ -33,9 +33,8 @@ const MultipleChoiceExercise: React.FC<Props> = ({
       </div>
       <div>
         {choices.map((choice: string) => (
-          <div>
+          <div key={choice}>
             <label
-              key={choice}
               className={``}
             >
               <input

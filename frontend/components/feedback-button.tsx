@@ -17,12 +17,12 @@ const FeedbackButton: React.FC<Props> = ({}) => {
 
   const handleSubmit = async (text: string) => {
     try {
-      const res = await fetch(`http://localhost:8888/v1/feedback`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/v1/feedback`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          "text": text,
-          "pagePath": router.asPath,
+          text: text,
+          pagePath: router.asPath,
         }),
       });
     } catch (error) {

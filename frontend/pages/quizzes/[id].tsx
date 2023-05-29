@@ -14,7 +14,7 @@ export default function QuizPage() {
 
   useEffect(() => {
     if (quizId) {
-      fetch(`http://localhost:8888/v1/quizzes/${quizId}`)
+      fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/v1/quizzes/${quizId}`)
         .then((res) => res.json())
         .then((quiz) => {
           setQuiz(quiz);

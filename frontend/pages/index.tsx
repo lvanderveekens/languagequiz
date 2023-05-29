@@ -15,7 +15,7 @@ export default function HomePage() {
   const [quizzes, setQuizzes] = useState<QuizDto[]>([]);
 
   useEffect(() => {
-    fetch("http://localhost:8888/v1/quizzes")
+    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/v1/quizzes`)
       .then((res) => res.json())
       .then((quizzes) => {
         setQuizzes(quizzes);

@@ -36,7 +36,7 @@ const Quiz: React.FC<Props> = ({
         }),
       };
 
-      const res = await fetch(`http://localhost:8888/v1/quizzes/${id}/answers`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/v1/quizzes/${id}/answers`, {
         method: "POST",
         body: JSON.stringify(req),
         headers: { "Content-Type": "application/json" },

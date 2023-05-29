@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"time"
 
 	"languagequiz/api"
@@ -62,5 +63,13 @@ func main() {
 	var handlers = api.NewHandlers(quizHandler, feedbackHandler)
 
 	var server = api.NewServer(handlers)
-	log.Fatal(server.Start(8888))
+	log.Fatal(server.Start(mustParseInt(os.Getenv("PORT"))))
+}
+
+func mustParseInt(s string) int {
+	i, err := strconv.Atoi(s)
+	if err != nil {
+		panic(err)
+	}
+	return i
 }
