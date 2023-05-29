@@ -13,7 +13,7 @@ build-production:
 run-production:
 	./${BINARY_NAME} 2>&1 > output.log &
 
-copy-to-server:
+scp-to-server:
 	make build-production
 	scp .env.prd root@161.35.247.132:/root/languagequiz/backend/.env
 	scp -r migrations root@161.35.247.132:/root/languagequiz/backend
