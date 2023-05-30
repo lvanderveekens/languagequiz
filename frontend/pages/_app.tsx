@@ -20,10 +20,12 @@ export default function App({ Component, pageProps }: AppProps) {
   return (
     <>
       <Script
+        id="gtm-script"
         strategy="afterInteractive"
         src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID}`}
       />
       <Script
+        id="gtag-script"
         strategy="afterInteractive"
         dangerouslySetInnerHTML={{
           __html: `
