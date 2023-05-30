@@ -64,7 +64,7 @@ export default function HomePage() {
                   return (
                     <div key={quiz.id}>
                       <Link href={`/quizzes/${quiz.id}`}>
-                        <div className="border border-2 hover:text-white hover:bg-[#003259] hover:border-[#003259] text-black relative rounded-lg aspect-[3/2]">
+                        <div className="border border-2 text-black relative rounded-lg aspect-[3/2]">
                           <div className="px-4 py-4">
                             <div>
                               <span className="font-bold">Name:</span> {quiz.name}
