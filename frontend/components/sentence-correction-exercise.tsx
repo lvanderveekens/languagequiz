@@ -30,12 +30,14 @@ const SentenceCorrectionExercise: React.FC<Props> = ({
     <div className="">
       <div>
         {index + 1}. {sentence}
-        {correctAnswer != null && answeredCorrectly && <span> ✅</span>}
-        {correctAnswer != null && !answeredCorrectly && <span> ❌</span>}
       </div>
       <div>
         <input
-          className={`border`}
+          className={`
+            border
+            ${correctAnswer != null && answeredCorrectly ? "text-green-500" : ""}
+            ${correctAnswer != null && !answeredCorrectly ? "text-red-500" : ""}
+          `}
           type="text"
           value={answer ?? ""}
           onChange={handleChange}

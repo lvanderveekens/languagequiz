@@ -28,17 +28,20 @@ const MultipleChoiceExercise: React.FC<Props> = ({
     <div className="">
       <div>
         {index + 1}. {question}
-        {correctAnswer != null && answeredCorrectly && <span> ✅</span>}
-        {correctAnswer != null && !answeredCorrectly && <span> ❌</span>}
+        {/* {correctAnswer != null && answeredCorrectly && <span> ✅</span>}
+        {correctAnswer != null && !answeredCorrectly && <span> ❌</span>} */}
       </div>
       <div>
         {choices.map((choice: string) => (
           <div key={choice}>
             <label
-              className={``}
+              className={`
+                  ${correctAnswer != null && answeredCorrectly && choice === answer ? "text-green-500" : ""}
+                  ${correctAnswer != null && !answeredCorrectly && choice === answer ? "text-red-500" : ""}
+              `}
             >
               <input
-                className="mr-2"
+                className={`mr-2`}
                 type="radio"
                 value={choice ?? ""}
                 checked={answer === choice}
