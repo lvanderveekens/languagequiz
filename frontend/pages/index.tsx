@@ -63,29 +63,35 @@ export default function HomePage() {
                 .map((quiz, i) => {
                   return (
                     <div key={quiz.id}>
-                      <Link href={`/quizzes/${quiz.id}`}>
-                        <div className="border border-2 text-black relative rounded-lg aspect-[3/2]">
-                          <div className="px-4 py-4">
-                            <div>
-                              <span className="font-bold">Name:</span> {quiz.name}
-                            </div>
-                            <div>
-                              <span className="font-bold">Created:</span> {moment(quiz.createdAt).fromNow()}
-                            </div>
-                            <div>
-                              <span className="font-bold">Language: </span>
-                              <span className={`border box-content mr-1 fi fi-${getLanguageByTag(quiz.languageTag)?.countryCode}`} />
-                              <span className="">{getLanguageByTag(quiz.languageTag)?.name}</span>
-                            </div>
-                            <div>
-                              <span className="font-bold">Sections:</span> {quiz.sections.length}
-                            </div>
-                            <div>
-                              <span className="font-bold">Exercises:</span> {getNumberOfExercises(quiz)}
-                            </div>
+                      <div className="border border-2 text-black relative rounded-lg aspect-[3/2]">
+                        <div className="px-4 py-4">
+                          <div>
+                            <span className="font-bold">Name:</span> {quiz.name}
+                          </div>
+                          <div>
+                            <span className="font-bold">Created:</span> {moment(quiz.createdAt).fromNow()}
+                          </div>
+                          <div>
+                            <span className="font-bold">Language: </span>
+                            <span
+                              className={`border box-content mr-1 fi fi-${
+                                getLanguageByTag(quiz.languageTag)?.countryCode
+                              }`}
+                            />
+                            <span className="">{getLanguageByTag(quiz.languageTag)?.name}</span>
+                          </div>
+                          <div>
+                            <span className="font-bold">Exercises:</span> {getNumberOfExercises(quiz)}
+                          </div>
+                          <div className="mt-2">
+                            <Link href={`/quizzes/${quiz.id}`}>
+                              <Button type="button" variant="primary-dark">
+                                Take quiz
+                              </Button>
+                            </Link>
                           </div>
                         </div>
-                      </Link>
+                      </div>
                     </div>
                   );
                 })}
