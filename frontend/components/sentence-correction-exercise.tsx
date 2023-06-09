@@ -37,6 +37,7 @@ const SentenceCorrectionExercise: React.FC<Props> = ({
             border
             ${correctAnswer != null && answeredCorrectly ? "text-green-500" : ""}
             ${correctAnswer != null && !answeredCorrectly ? "text-red-500" : ""}
+            disabled:opacity-100
           `}
           type="text"
           value={answer ?? ""}

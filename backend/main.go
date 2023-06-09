@@ -63,7 +63,7 @@ func main() {
 	var handlers = api.NewHandlers(quizHandler, feedbackHandler)
 
 	var server = api.NewServer(handlers)
-	log.Fatal(server.Start(mustParseInt(os.Getenv("PORT"))))
+	log.Fatal(server.Start(os.Getenv("CORS_ALLOWED_ORIGIN"), mustParseInt(os.Getenv("PORT"))))
 }
 
 func mustParseInt(s string) int {

@@ -19,11 +19,11 @@ func NewServer(handlers *Handlers) *Server {
 	}
 }
 
-func (s *Server) Start(port int) error {
+func (s *Server) Start(corsAllowedOrigin string, port int) error {
 	r := gin.Default()
 
 	r.Use(cors.New(cors.Options{
-		AllowedOrigins: []string{"http://localhost:3000"},
+		AllowedOrigins: []string{corsAllowedOrigin},
 		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 	}))
 
