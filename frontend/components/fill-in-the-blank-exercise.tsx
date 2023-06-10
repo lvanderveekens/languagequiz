@@ -6,6 +6,7 @@ type Props = {
   question: string
   answer?: string
   setAnswer: (answer: string) => void
+  correct?: boolean
   correctAnswer?: string
   feedback?: string
   disabled?: boolean
@@ -16,12 +17,11 @@ const FillInTheBlankExercise: React.FC<Props> = ({
   question,
   answer,
   setAnswer,
+  correct,
   correctAnswer,
   feedback,
   disabled,
 }) => {
-  const answeredCorrectly = answer === correctAnswer;
-
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     setAnswer(event.target.value);
   };
@@ -37,8 +37,8 @@ const FillInTheBlankExercise: React.FC<Props> = ({
         <input
           className={`
             border
-            ${correctAnswer != null && answeredCorrectly ? "text-green-500" : ""}
-            ${correctAnswer != null && !answeredCorrectly ? "text-red-500" : ""}
+            ${correct != null && correct ? "text-green-500" : ""}
+            ${correct != null && !correct ? "text-red-500" : ""}
             opacity-100
           `}
           type="text"
@@ -49,8 +49,8 @@ const FillInTheBlankExercise: React.FC<Props> = ({
         />
         {after}
       </div>
-      {correctAnswer && !answeredCorrectly && <div className="text-red-500">Correct answer: {correctAnswer}</div>}
-      {feedback && !answeredCorrectly && <ExerciseFeedback text={feedback} />}
+      {correctAnswer && !correct && <div className="text-red-500">Correct answer: {correctAnswer}</div>}
+      {feedback && !correct && <ExerciseFeedback text={feedback} />}
     </div>
   );
 };

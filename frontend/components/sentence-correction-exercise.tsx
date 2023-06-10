@@ -6,6 +6,7 @@ type Props = {
   sentence: string
   answer?: string
   setAnswer: (answer: string) => void
+  correct?: boolean
   correctAnswer?: string
   feedback?: string
   disabled?: boolean
@@ -16,12 +17,11 @@ const SentenceCorrectionExercise: React.FC<Props> = ({
   sentence,
   answer,
   setAnswer,
+  correct,
   correctAnswer,
   feedback,
   disabled,
 }) => {
-  const answeredCorrectly = answer === correctAnswer;
-
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     setAnswer(event.target.value);
   };
@@ -35,8 +35,8 @@ const SentenceCorrectionExercise: React.FC<Props> = ({
         <input
           className={`
             border
-            ${correctAnswer != null && answeredCorrectly ? "text-green-500" : ""}
-            ${correctAnswer != null && !answeredCorrectly ? "text-red-500" : ""}
+            ${correct != null && correct ? "text-green-500" : ""}
+            ${correct != null && !correct ? "text-red-500" : ""}
             disabled:opacity-100
           `}
           type="text"
@@ -45,11 +45,11 @@ const SentenceCorrectionExercise: React.FC<Props> = ({
           disabled={disabled}
           required
         />
-        {correctAnswer != null && !answeredCorrectly && (
+        {correctAnswer != null && !correct && (
           <div className="text-red-500">Correct answer: {correctAnswer}</div>
         )}
       </div>
-      {feedback && !answeredCorrectly && <ExerciseFeedback text={feedback} />}
+      {feedback && !correct && <ExerciseFeedback text={feedback} />}
     </div>
   );
 };

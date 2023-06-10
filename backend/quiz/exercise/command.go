@@ -3,10 +3,10 @@ package exercise
 import (
 	"errors"
 	"fmt"
-	"languagequiz/slices"
+	myslices "languagequiz/utils/slices"
 	"regexp"
 
-	xslices "golang.org/x/exp/slices"
+	"golang.org/x/exp/slices"
 )
 
 var blankRegex = regexp.MustCompile(`______`)
@@ -35,11 +35,11 @@ func NewCreateMultipleChoiceExerciseCommand(
 	if len(choices) != 4 {
 		return nil, fmt.Errorf("expected 4 choices, found: %d", len(choices))
 	}
-	duplicateChoice := slices.FindDuplicate(choices)
+	duplicateChoice := myslices.FindDuplicate(choices)
 	if duplicateChoice != nil {
 		return nil, fmt.Errorf("duplicate choice found: %s", *duplicateChoice)
 	}
-	if !xslices.Contains(choices, answer) {
+	if !slices.Contains(choices, answer) {
 		return nil, fmt.Errorf("answer is not a choice")
 	}
 
