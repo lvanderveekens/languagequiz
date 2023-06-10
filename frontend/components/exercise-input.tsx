@@ -2,6 +2,7 @@ import { ExerciseFormValues, ExerciseType } from "@/components/models";
 import { FaInfoCircle } from "react-icons/fa";
 import { GrFormClose } from "react-icons/gr";
 import "/node_modules/flag-icons/css/flag-icons.min.css";
+import { useEffect, useState } from "react";
 
 type ExerciseInputProps = {
   value: ExerciseFormValues;
@@ -106,11 +107,25 @@ const MultipleChoiceExerciseInput: React.FC<MultipleChoiceExerciseInputProps> = 
   onFeedbackChange,
 }) => {
 
+  const [answerIndex, setAnswerIndex] = useState<number>();
+
+  useEffect(() => {
+    if (choices && answerIndex && choices[answerIndex] != answer) {
+      console.log("updating answer to: " + choices[answerIndex]);
+      onAnswerChange(choices[answerIndex]);
+    }
+  }, [choices, answerIndex]);
+
   const handleChoiceChange = (index: number) => (event: any) => {
     const { value } = event.target;
     const updatedChoices = [...(choices ?? new Array(4))]
     updatedChoices[index] = value
     onChoicesChange(updatedChoices);
+  };
+
+  const handleAnswerIndexChange = (event: any) => {
+    let updatedAnswerIndex = event.target.value
+    setAnswerIndex(updatedAnswerIndex);
   };
 
   return (
@@ -180,17 +195,19 @@ const MultipleChoiceExerciseInput: React.FC<MultipleChoiceExerciseInputProps> = 
           />
         </label>
       </div>
+      {/* TODO: dropdown */}
       <div className="mb-4">
         <label>
           <div className="mr-3">Answer</div>
-          <input
-            className="w-full border"
-            placeholder="Enter the answer"
-            type="text"
-            value={answer ?? ""}
-            onChange={(e) => onAnswerChange(e.target.value)}
-            required
-          />
+          <select className="w-full" value={answerIndex ?? ""} onChange={handleAnswerIndexChange} required>
+            <option disabled value="">
+              Select an answer
+            </option>
+            <option value={0}>Choice 1</option>
+            <option value={1}>Choice 2</option>
+            <option value={2}>Choice 3</option>
+            <option value={3}>Choice 4</option>
+          </select>
         </label>
       </div>
       <div>
