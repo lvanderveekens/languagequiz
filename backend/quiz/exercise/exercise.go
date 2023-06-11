@@ -1,8 +1,6 @@
 package exercise
 
 import (
-	mystrings "languagequiz/utils/strings"
-	"strings"
 	"time"
 )
 
@@ -89,10 +87,7 @@ func NewFillInTheBlankExercise(
 
 func (e *FillInTheBlankExercise) CheckAnswer(answer any) bool {
 	if answer, ok := answer.(string); ok {
-		return strings.EqualFold(
-			mystrings.RemovePunctuation(e.answer),
-			mystrings.RemovePunctuation(strings.TrimSpace(answer)),
-		)
+		return normalizeAnswer(e.answer) == normalizeAnswer(answer)
 	}
 	return false
 }
@@ -122,10 +117,7 @@ func NewSentenceCorrectionExercise(
 
 func (e *SentenceCorrectionExercise) CheckAnswer(answer any) bool {
 	if answer, ok := answer.(string); ok {
-		return strings.EqualFold(
-			mystrings.RemovePunctuation(e.CorrectedSentence),
-			mystrings.RemovePunctuation(strings.TrimSpace(answer)),
-		)
+		return normalizeAnswer(e.CorrectedSentence) == normalizeAnswer(answer)
 	}
 	return false
 }

@@ -1,9 +1,17 @@
 package strings
 
-import "regexp"
+import (
+	"strings"
+)
 
-var punctRegex = regexp.MustCompile(`[[:punct:]]`)
-
-func RemovePunctuation(s string) string {
-	return punctRegex.ReplaceAllString(s, "")
+func NormalizeApostrophes(s string) string {
+	var normalized strings.Builder
+	for _, c := range s {
+		if c == '’' {
+			normalized.WriteRune('\'')
+		} else {
+			normalized.WriteRune(c)
+		}
+	}
+	return normalized.String()
 }
